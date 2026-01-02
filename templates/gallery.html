@@ -15,6 +15,153 @@
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
             background: #1a1a1a;
             color: #e0e0e0;
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        .main-container {
+            display: flex;
+            height: calc(100vh - 64px);
+        }
+
+        .sidebar {
+            width: 250px;
+            background: #2d2d2d;
+            border-right: 1px solid #3a3a3a;
+            overflow-y: auto;
+            flex-shrink: 0;
+        }
+
+        .sidebar-header {
+            padding: 16px;
+            border-bottom: 1px solid #3a3a3a;
+            font-weight: 600;
+            font-size: 14px;
+            color: #fff;
+        }
+
+        .tree-view {
+            padding: 8px 0;
+        }
+
+        .tree-item {
+            padding: 8px 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: background 0.2s;
+            user-select: none;
+        }
+
+        .tree-item:hover {
+            background: #3a3a3a;
+        }
+
+        .tree-item.active {
+            background: #4a9eff;
+            color: #fff;
+        }
+
+        .tree-item-icon {
+            font-size: 16px;
+            width: 20px;
+            text-align: center;
+        }
+
+        .tree-item-name {
+            flex: 1;
+            font-size: 13px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .tree-item-toggle {
+            width: 16px;
+            height: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            color: #999;
+        }
+
+        .tree-children {
+            padding-left: 20px;
+        }
+
+        .metadata-panel {
+            width: 350px;
+            background: #2d2d2d;
+            border-left: 1px solid #3a3a3a;
+            overflow-y: auto;
+            flex-shrink: 0;
+        }
+
+        .metadata-header {
+            padding: 16px;
+            border-bottom: 1px solid #3a3a3a;
+            font-weight: 600;
+            font-size: 14px;
+            color: #fff;
+        }
+
+        .metadata-content {
+            padding: 16px;
+        }
+
+        .metadata-empty {
+            padding: 40px 20px;
+            text-align: center;
+            color: #666;
+            font-size: 13px;
+        }
+
+        .metadata-section {
+            margin-bottom: 20px;
+        }
+
+        .metadata-section-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: #4a9eff;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+
+        .metadata-item {
+            margin-bottom: 8px;
+            font-size: 13px;
+        }
+
+        .metadata-label {
+            color: #999;
+            margin-bottom: 2px;
+            font-size: 11px;
+        }
+
+        .metadata-value {
+            color: #e0e0e0;
+            word-break: break-word;
+        }
+
+        .metadata-json {
+            background: #1a1a1a;
+            padding: 8px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 11px;
+            max-height: 300px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+
+        .gallery-container {
+            flex: 1;
+            overflow-y: auto;
+            background: #1a1a1a;
         }
 
         .header {
@@ -61,8 +208,6 @@
         }
 
         .container {
-            max-width: 1400px;
-            margin: 0 auto;
             padding: 30px 20px;
         }
 
@@ -92,6 +237,73 @@
             height: 100%;
             object-fit: cover;
             display: block;
+        }
+
+        .folder-item {
+            position: relative;
+            background: #2d2d2d;
+            border-radius: 8px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            aspect-ratio: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid #3a3a3a;
+        }
+
+        .folder-item:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+            border-color: #4a9eff;
+        }
+
+        .folder-icon {
+            font-size: 64px;
+            margin-bottom: 12px;
+        }
+
+        .folder-name {
+            color: #e0e0e0;
+            font-size: 14px;
+            font-weight: 500;
+            text-align: center;
+            padding: 0 12px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            max-width: 100%;
+        }
+
+        .breadcrumb {
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            color: #999;
+        }
+
+        .breadcrumb-item {
+            cursor: pointer;
+            color: #4a9eff;
+            transition: color 0.2s;
+        }
+
+        .breadcrumb-item:hover {
+            color: #3a8eef;
+            text-decoration: underline;
+        }
+
+        .breadcrumb-separator {
+            color: #666;
+        }
+
+        .breadcrumb-current {
+            color: #e0e0e0;
+            cursor: default;
         }
 
         .image-info {
@@ -242,14 +454,41 @@
         </div>
     </div>
 
-    <div class="container">
-        <div id="loading" class="loading">Loading images...</div>
-        <div id="empty" class="empty" style="display: none;">
-            <div class="empty-icon">🖼️</div>
-            <h2>No images yet</h2>
-            <p>Generate some images in ComfyUI to see them here!</p>
+    <div class="main-container">
+        <!-- Left Sidebar: File Tree -->
+        <div class="sidebar">
+            <div class="sidebar-header">Output Folder</div>
+            <div class="tree-view" id="treeView">
+                <div class="tree-item active" data-path="" onclick="navigateToFolder('')">
+                    <span class="tree-item-icon">🏠</span>
+                    <span class="tree-item-name">Root</span>
+                </div>
+            </div>
         </div>
-        <div id="gallery" class="gallery"></div>
+
+        <!-- Center: Gallery -->
+        <div class="gallery-container">
+            <div class="container">
+                <div id="breadcrumb" class="breadcrumb" style="display: none;"></div>
+                <div id="loading" class="loading">Loading images...</div>
+                <div id="empty" class="empty" style="display: none;">
+                    <div class="empty-icon">🖼️</div>
+                    <h2>No images or folders yet</h2>
+                    <p>Generate some images in ComfyUI to see them here!</p>
+                </div>
+                <div id="gallery" class="gallery"></div>
+            </div>
+        </div>
+
+        <!-- Right Sidebar: Metadata -->
+        <div class="metadata-panel">
+            <div class="metadata-header">Image Metadata</div>
+            <div id="metadataContent" class="metadata-content">
+                <div class="metadata-empty">
+                    Select an image to view its metadata
+                </div>
+            </div>
+        </div>
     </div>
 
     <div id="lightbox" class="lightbox" onclick="closeLightbox(event)">
@@ -265,35 +504,209 @@
     <script>
         let images = [];
         let currentImageIndex = 0;
+        let currentPath = '';
+        let selectedImage = null;
+        let expandedFolders = new Set(['']);
+
+        async function loadDirectoryTree(path = '') {
+            try {
+                const url = path ? `/api/tree/${path}` : '/api/tree';
+                const response = await fetch(url);
+                const folders = await response.json();
+                return folders;
+            } catch (error) {
+                console.error('Error loading tree:', error);
+                return [];
+            }
+        }
+
+        async function buildTree() {
+            const treeView = document.getElementById('treeView');
+            treeView.innerHTML = '';
+
+            // Add root item
+            const rootItem = document.createElement('div');
+            rootItem.className = currentPath === '' ? 'tree-item active' : 'tree-item';
+            rootItem.dataset.path = '';
+            rootItem.onclick = () => navigateToFolder('');
+            rootItem.innerHTML = `
+                <span class="tree-item-icon">🏠</span>
+                <span class="tree-item-name">Root</span>
+            `;
+            treeView.appendChild(rootItem);
+
+            // Build tree recursively
+            await buildTreeLevel(treeView, '', 0);
+        }
+
+        async function buildTreeLevel(container, parentPath, level) {
+            const folders = await loadDirectoryTree(parentPath);
+
+            for (const folder of folders) {
+                const itemContainer = document.createElement('div');
+                itemContainer.style.paddingLeft = `${level * 20}px`;
+
+                const item = document.createElement('div');
+                item.className = currentPath === folder.path ? 'tree-item active' : 'tree-item';
+                item.dataset.path = folder.path;
+                item.innerHTML = `
+                    <span class="tree-item-icon">📁</span>
+                    <span class="tree-item-name">${folder.name}</span>
+                `;
+                item.onclick = (e) => {
+                    e.stopPropagation();
+                    navigateToFolder(folder.path);
+                };
+
+                itemContainer.appendChild(item);
+                container.appendChild(itemContainer);
+
+                // Recursively load subfolders if this folder is expanded
+                if (expandedFolders.has(folder.path)) {
+                    await buildTreeLevel(container, folder.path, level + 1);
+                }
+            }
+        }
+
+        async function loadMetadata(imagePath) {
+            const metadataContent = document.getElementById('metadataContent');
+            metadataContent.innerHTML = '<div class="metadata-empty">Loading...</div>';
+
+            try {
+                const response = await fetch(`/api/metadata/${imagePath}`);
+                const metadata = await response.json();
+
+                if (metadata.error) {
+                    metadataContent.innerHTML = `<div class="metadata-empty">Error: ${metadata.error}</div>`;
+                    return;
+                }
+
+                let html = '';
+
+                // Basic Info
+                html += '<div class="metadata-section">';
+                html += '<div class="metadata-section-title">Basic Info</div>';
+                html += `<div class="metadata-item">
+                    <div class="metadata-label">Format</div>
+                    <div class="metadata-value">${metadata.format || 'N/A'}</div>
+                </div>`;
+                html += `<div class="metadata-item">
+                    <div class="metadata-label">Dimensions</div>
+                    <div class="metadata-value">${metadata.size.width} × ${metadata.size.height}</div>
+                </div>`;
+                html += `<div class="metadata-item">
+                    <div class="metadata-label">Color Mode</div>
+                    <div class="metadata-value">${metadata.mode || 'N/A'}</div>
+                </div>`;
+                html += `<div class="metadata-item">
+                    <div class="metadata-label">File Size</div>
+                    <div class="metadata-value">${formatFileSize(metadata.file_size)}</div>
+                </div>`;
+                html += '</div>';
+
+                // Prompt
+                if (metadata.prompt) {
+                    html += '<div class="metadata-section">';
+                    html += '<div class="metadata-section-title">ComfyUI Prompt</div>';
+                    html += `<div class="metadata-json">${JSON.stringify(metadata.prompt, null, 2)}</div>`;
+                    html += '</div>';
+                }
+
+                // Workflow
+                if (metadata.workflow) {
+                    html += '<div class="metadata-section">';
+                    html += '<div class="metadata-section-title">ComfyUI Workflow</div>';
+                    html += `<div class="metadata-json">${JSON.stringify(metadata.workflow, null, 2)}</div>`;
+                    html += '</div>';
+                }
+
+                // Other Parameters
+                if (Object.keys(metadata.parameters).length > 0) {
+                    html += '<div class="metadata-section">';
+                    html += '<div class="metadata-section-title">Parameters</div>';
+                    for (const [key, value] of Object.entries(metadata.parameters)) {
+                        html += `<div class="metadata-item">
+                            <div class="metadata-label">${key}</div>
+                            <div class="metadata-value">${value}</div>
+                        </div>`;
+                    }
+                    html += '</div>';
+                }
+
+                metadataContent.innerHTML = html;
+            } catch (error) {
+                metadataContent.innerHTML = `<div class="metadata-empty">Error loading metadata: ${error.message}</div>`;
+            }
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+        }
 
         async function loadImages() {
             const loading = document.getElementById('loading');
             const empty = document.getElementById('empty');
             const gallery = document.getElementById('gallery');
             const stats = document.getElementById('stats');
+            const breadcrumb = document.getElementById('breadcrumb');
 
             loading.style.display = 'block';
             empty.style.display = 'none';
             gallery.innerHTML = '';
 
             try {
-                const response = await fetch('/api/images');
-                images = await response.json();
+                const url = currentPath ? `/api/browse/${currentPath}` : '/api/browse';
+                const response = await fetch(url);
+                const data = await response.json();
 
                 loading.style.display = 'none';
 
-                if (images.length === 0) {
+                const folders = data.folders || [];
+                const imageList = data.images || [];
+                images = imageList;
+
+                // Update breadcrumb
+                updateBreadcrumb(currentPath);
+
+                if (folders.length === 0 && images.length === 0) {
                     empty.style.display = 'block';
-                    stats.textContent = 'No images';
+                    stats.textContent = 'No items';
                     return;
                 }
 
-                stats.textContent = `${images.length} image${images.length !== 1 ? 's' : ''}`;
+                const totalItems = folders.length + images.length;
+                stats.textContent = `${folders.length} folder${folders.length !== 1 ? 's' : ''}, ${images.length} image${images.length !== 1 ? 's' : ''}`;
 
+                // Render folders first
+                folders.forEach((folder) => {
+                    const item = document.createElement('div');
+                    item.className = 'folder-item';
+                    item.onclick = () => navigateToFolder(folder.path);
+
+                    item.innerHTML = `
+                        <div class="folder-icon">📁</div>
+                        <div class="folder-name">${folder.name}</div>
+                    `;
+
+                    gallery.appendChild(item);
+                });
+
+                // Then render images
                 images.forEach((image, index) => {
                     const item = document.createElement('div');
                     item.className = 'gallery-item';
-                    item.onclick = () => openLightbox(index);
+                    item.onclick = () => {
+                        selectedImage = image;
+                        loadMetadata(image.path);
+                        // Highlight selected image
+                        document.querySelectorAll('.gallery-item').forEach(i => i.style.outline = '');
+                        item.style.outline = '3px solid #4a9eff';
+                    };
+                    item.ondblclick = () => openLightbox(index);
 
                     item.innerHTML = `
                         <img src="/thumbnail/${image.path}" alt="${image.name}" loading="lazy">
@@ -306,8 +719,59 @@
                     gallery.appendChild(item);
                 });
             } catch (error) {
-                loading.textContent = 'Error loading images: ' + error.message;
+                loading.textContent = 'Error loading items: ' + error.message;
             }
+        }
+
+        async function navigateToFolder(path) {
+            currentPath = path;
+            expandedFolders.add(path);
+            await buildTree();
+            await loadImages();
+        }
+
+        function updateBreadcrumb(path) {
+            const breadcrumb = document.getElementById('breadcrumb');
+            breadcrumb.innerHTML = '';
+
+            const parts = path ? path.split(/[\\/]/).filter(p => p) : [];
+
+            // Home link
+            const homeLink = document.createElement('span');
+            homeLink.className = 'breadcrumb-item';
+            homeLink.textContent = '🏠 Home';
+            homeLink.onclick = () => navigateToFolder('');
+            breadcrumb.appendChild(homeLink);
+
+            if (parts.length === 0) {
+                breadcrumb.style.display = 'none';
+                return;
+            }
+
+            breadcrumb.style.display = 'flex';
+
+            // Build path links
+            let accumulatedPath = '';
+            parts.forEach((part, index) => {
+                const separator = document.createElement('span');
+                separator.className = 'breadcrumb-separator';
+                separator.textContent = '/';
+                breadcrumb.appendChild(separator);
+
+                accumulatedPath += (accumulatedPath ? '/' : '') + part;
+                const isLast = index === parts.length - 1;
+
+                const link = document.createElement('span');
+                link.className = isLast ? 'breadcrumb-current' : 'breadcrumb-item';
+                link.textContent = part;
+
+                if (!isLast) {
+                    const pathToNavigate = accumulatedPath;
+                    link.onclick = () => navigateToFolder(pathToNavigate);
+                }
+
+                breadcrumb.appendChild(link);
+            });
         }
 
         function openLightbox(index) {
@@ -354,8 +818,13 @@
             if (e.key === 'ArrowRight') navigateLightbox(1);
         });
 
-        // Load images on page load
-        loadImages();
+        // Load images and tree on page load
+        async function initGallery() {
+            await buildTree();
+            await loadImages();
+        }
+
+        initGallery();
     </script>
 </body>
 </html>
