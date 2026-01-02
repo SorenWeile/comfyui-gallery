@@ -1,0 +1,11 @@
+{
+  "name": "Gallery",
+  "port": 3002,
+  "proxy_port": 0,
+  "command": "/comfyui-gallery/start.sh",
+  "autolaunch": false,
+  "env": {
+    "COMFYUI_OUTPUT_DIR": "/ComfyUI/output",
+    "GALLERY_PORT": "3002"
+  }
+}
