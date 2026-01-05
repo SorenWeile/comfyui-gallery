@@ -476,6 +476,20 @@
             from { transform: translateX(0); opacity: 1; }
             to { transform: translateX(400px); opacity: 0; }
         }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .spinner {
+            width: 24px;
+            height: 24px;
+            border: 3px solid #3a3a3a;
+            border-top-color: #4a9eff;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
     </style>
 </head>
 <body>
@@ -718,6 +732,42 @@
             }, 2000);
         }
 
+        // Loading indicator
+        let loadingIndicator = null;
+
+        function showLoadingIndicator() {
+            if (loadingIndicator) return;
+
+            loadingIndicator = document.createElement('div');
+            loadingIndicator.id = 'loadingIndicator';
+            loadingIndicator.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <div class="spinner"></div>
+                    <span>Loading images...</span>
+                </div>
+            `;
+            loadingIndicator.style.cssText = `
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: rgba(0, 0, 0, 0.9);
+                color: white;
+                padding: 20px 30px;
+                border-radius: 8px;
+                z-index: 10002;
+                font-size: 16px;
+            `;
+            document.body.appendChild(loadingIndicator);
+        }
+
+        function hideLoadingIndicator() {
+            if (loadingIndicator) {
+                loadingIndicator.remove();
+                loadingIndicator = null;
+            }
+        }
+
         document.addEventListener('click', hideContextMenu);
         document.addEventListener('contextmenu', (e) => {
             if (!e.target.closest('.thumbnail-item')) {
@@ -745,7 +795,7 @@
 
         async function buildTree() {
             const treeView = document.getElementById('treeView');
-            treeView.innerHTML = '';
+            treeView.innerHTML = '<div style="padding: 16px; color: #999;">Loading folders...</div>';
 
             const rootItem = document.createElement('div');
             rootItem.className = currentPath === '' ? 'tree-item active' : 'tree-item';
@@ -755,9 +805,11 @@
                 <span class="tree-item-icon">🏠</span>
                 <span class="tree-item-name">Root</span>
             `;
-            treeView.appendChild(rootItem);
 
             const folders = await loadDirectoryTree();
+
+            treeView.innerHTML = '';
+            treeView.appendChild(rootItem);
             buildTreeLevel(treeView, folders, 0);
         }
 
@@ -915,6 +967,10 @@
             const stats = document.getElementById('stats');
 
             try {
+                // Show loading indicator
+                stats.textContent = 'Loading...';
+                showLoadingIndicator();
+
                 const url = currentPath ? `/api/browse/${currentPath}` : '/api/browse';
                 const response = await fetch(url);
                 const data = await response.json();
@@ -932,9 +988,12 @@
                 } else {
                     showEmptyState();
                 }
+
+                hideLoadingIndicator();
             } catch (error) {
                 console.error('Error loading items:', error);
                 stats.textContent = 'Error loading items';
+                hideLoadingIndicator();
             }
         }
 
@@ -1016,7 +1075,25 @@
                 resetZoom();
             };
 
-            renderThumbnails();
+            updateActiveThumbnail();
+        }
+
+        function updateActiveThumbnail() {
+            // Remove active class from all thumbnails
+            document.querySelectorAll('.thumbnail-item').forEach(thumb => {
+                thumb.classList.remove('active');
+            });
+
+            // Add active class to current thumbnail
+            const thumbnailsScroll = document.getElementById('thumbnailsScroll');
+            const thumbnails = thumbnailsScroll.querySelectorAll('.thumbnail-item');
+
+            // Account for folders before images
+            const thumbnailIndex = folders.length + currentImageIndex;
+            if (thumbnails[thumbnailIndex]) {
+                thumbnails[thumbnailIndex].classList.add('active');
+                thumbnails[thumbnailIndex].scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+            }
         }
 
         function navigateDetail(direction) {
@@ -1125,7 +1202,7 @@
                 thumbnailsScroll.appendChild(thumb);
             });
 
-            // Images
+            // Images with lazy loading
             images.forEach((image, index) => {
                 const thumb = document.createElement('div');
                 thumb.className = 'thumbnail-item';
@@ -1135,15 +1212,72 @@
                 thumb.onclick = () => openDetailView(index);
                 thumb.oncontextmenu = (e) => showContextMenu(e, image, 'image');
 
-                thumb.innerHTML = `<img src="/thumbnail/${image.path}" alt="${image.name}">`;
+                // Create img element with lazy loading
+                const img = document.createElement('img');
+                img.dataset.src = `/thumbnail/${image.path}`;
+                img.alt = image.name;
+                img.className = 'lazy-load';
+                img.style.background = '#2d2d2d';
+
+                thumb.appendChild(img);
                 thumbnailsScroll.appendChild(thumb);
             });
+
+            // Initialize lazy loading
+            initLazyLoading();
 
             // Scroll active into view
             const activeThumb = thumbnailsScroll.querySelector('.thumbnail-item.active');
             if (activeThumb) {
                 activeThumb.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
             }
+        }
+
+        // Lazy loading using Intersection Observer
+        let lazyLoadObserver = null;
+
+        function initLazyLoading() {
+            // Disconnect existing observer if any
+            if (lazyLoadObserver) {
+                lazyLoadObserver.disconnect();
+            }
+
+            // Create new observer
+            lazyLoadObserver = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const img = entry.target;
+                        const src = img.dataset.src;
+
+                        if (src) {
+                            // Add loading placeholder
+                            img.style.opacity = '0.5';
+
+                            img.src = src;
+                            img.onload = () => {
+                                img.style.opacity = '1';
+                                img.classList.remove('lazy-load');
+                            };
+                            img.onerror = () => {
+                                img.style.opacity = '1';
+                                img.alt = 'Failed to load';
+                            };
+
+                            delete img.dataset.src;
+                            observer.unobserve(img);
+                        }
+                    }
+                });
+            }, {
+                root: document.getElementById('thumbnailsScroll'),
+                rootMargin: '50px',
+                threshold: 0.01
+            });
+
+            // Observe all lazy load images
+            document.querySelectorAll('img.lazy-load').forEach(img => {
+                lazyLoadObserver.observe(img);
+            });
         }
 
         // Keyboard Navigation

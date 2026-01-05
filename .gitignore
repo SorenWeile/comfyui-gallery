@@ -26,3 +26,6 @@ instance/
 .DS_Store
 Thumbs.db
 /preview
+
+# Generated thumbnails
+/thumbnails

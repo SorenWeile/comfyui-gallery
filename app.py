@@ -18,9 +18,19 @@ app = Flask(__name__)
 default_output_dir = os.path.join(os.path.dirname(__file__), 'preview') if os.path.exists(os.path.join(os.path.dirname(__file__), 'preview')) else '/ComfyUI/output'
 OUTPUT_DIR = os.environ.get('COMFYUI_OUTPUT_DIR', default_output_dir)
 GALLERY_PORT = int(os.environ.get('GALLERY_PORT', 3002))
+THUMBNAIL_DIR = os.path.join(os.path.dirname(__file__), 'thumbnails')
+THUMBNAIL_SIZE = (300, 300)
 
 # Supported image formats
 IMAGE_EXTENSIONS = {'.png', '.jpg', '.jpeg', '.gif', '.webp', '.bmp'}
+
+# Cache for directory tree
+directory_tree_cache = None
+directory_tree_cache_time = None
+CACHE_DURATION = 300  # Cache for 5 minutes
+
+# Create thumbnail directory if it doesn't exist
+os.makedirs(THUMBNAIL_DIR, exist_ok=True)
 
 def get_images(directory):
     """Recursively get all images from the output directory."""
@@ -181,6 +191,70 @@ def build_directory_tree(directory, current_path=''):
 
     return tree
 
+def get_cached_directory_tree(directory):
+    """Get directory tree with caching."""
+    global directory_tree_cache, directory_tree_cache_time
+
+    current_time = datetime.now().timestamp()
+
+    # Check if cache is valid
+    if (directory_tree_cache is not None and
+        directory_tree_cache_time is not None and
+        (current_time - directory_tree_cache_time) < CACHE_DURATION):
+        return directory_tree_cache
+
+    # Build new tree and cache it
+    tree = build_directory_tree(directory)
+    directory_tree_cache = tree
+    directory_tree_cache_time = current_time
+
+    return tree
+
+def generate_thumbnail(image_path, thumbnail_path):
+    """Generate a thumbnail for an image."""
+    try:
+        with Image.open(image_path) as img:
+            # Convert RGBA to RGB if necessary
+            if img.mode in ('RGBA', 'LA', 'P'):
+                background = Image.new('RGB', img.size, (255, 255, 255))
+                if img.mode == 'P':
+                    img = img.convert('RGBA')
+                background.paste(img, mask=img.split()[-1] if img.mode in ('RGBA', 'LA') else None)
+                img = background
+
+            # Create thumbnail
+            img.thumbnail(THUMBNAIL_SIZE, Image.Resampling.LANCZOS)
+            img.save(thumbnail_path, 'JPEG', quality=85, optimize=True)
+            return True
+    except Exception as e:
+        print(f"Error generating thumbnail: {e}")
+        return False
+
+def get_thumbnail_path(image_path):
+    """Get the path to a thumbnail, generating it if necessary."""
+    # Create a unique filename based on the image path
+    path_hash = str(abs(hash(image_path)))
+    thumbnail_filename = f"{path_hash}.jpg"
+    thumbnail_path = os.path.join(THUMBNAIL_DIR, thumbnail_filename)
+
+    # Check if thumbnail exists and is newer than the original
+    full_image_path = safe_join(OUTPUT_DIR, image_path)
+    if not full_image_path or not os.path.exists(full_image_path):
+        return None
+
+    image_mtime = os.path.getmtime(full_image_path)
+
+    if os.path.exists(thumbnail_path):
+        thumb_mtime = os.path.getmtime(thumbnail_path)
+        if thumb_mtime >= image_mtime:
+            return thumbnail_path
+
+    # Generate thumbnail
+    if generate_thumbnail(full_image_path, thumbnail_path):
+        return thumbnail_path
+
+    return None
+
 @app.route('/')
 def index():
     """Main gallery page."""
@@ -206,9 +280,18 @@ def api_browse(folder_path=''):
 @app.route('/api/tree')
 @app.route('/api/tree/<path:folder_path>')
 def api_tree(folder_path=''):
-    """API endpoint to get directory tree."""
-    tree = build_directory_tree(OUTPUT_DIR, folder_path)
+    """API endpoint to get directory tree with caching."""
+    tree = get_cached_directory_tree(OUTPUT_DIR)
     return jsonify(tree)
+
+@app.route('/api/tree/refresh')
+def api_tree_refresh():
+    """Force refresh the directory tree cache."""
+    global directory_tree_cache, directory_tree_cache_time
+    directory_tree_cache = None
+    directory_tree_cache_time = None
+    tree = get_cached_directory_tree(OUTPUT_DIR)
+    return jsonify({'status': 'refreshed', 'tree': tree})
 
 @app.route('/api/metadata/<path:image_path>')
 def api_metadata(image_path):
@@ -233,8 +316,16 @@ def serve_image(filename):
 
 @app.route('/thumbnail/<path:filename>')
 def serve_thumbnail(filename):
-    """Serve thumbnail (for now, just serve the full image)."""
-    return serve_image(filename)
+    """Serve a thumbnail image, generating it if necessary."""
+    try:
+        thumbnail_path = get_thumbnail_path(filename)
+        if thumbnail_path and os.path.exists(thumbnail_path):
+            return send_file(thumbnail_path, mimetype='image/jpeg')
+        # Fallback to full image if thumbnail generation fails
+        return serve_image(filename)
+    except Exception as e:
+        print(f"Error serving thumbnail: {e}")
+        return serve_image(filename)
 
 @app.route('/api/download/<path:filename>')
 def download_image(filename):
