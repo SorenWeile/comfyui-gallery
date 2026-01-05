@@ -14,7 +14,9 @@ from PIL.PngImagePlugin import PngInfo
 app = Flask(__name__)
 
 # Configuration
-OUTPUT_DIR = os.environ.get('COMFYUI_OUTPUT_DIR', '/ComfyUI/output')
+# Default to local 'preview' folder for development, or use environment variable
+default_output_dir = os.path.join(os.path.dirname(__file__), 'preview') if os.path.exists(os.path.join(os.path.dirname(__file__), 'preview')) else '/ComfyUI/output'
+OUTPUT_DIR = os.environ.get('COMFYUI_OUTPUT_DIR', default_output_dir)
 GALLERY_PORT = int(os.environ.get('GALLERY_PORT', 3002))
 
 # Supported image formats
@@ -146,7 +148,7 @@ def get_image_metadata(file_path):
     return metadata
 
 def build_directory_tree(directory, current_path=''):
-    """Build a hierarchical directory tree structure."""
+    """Build a hierarchical directory tree structure recursively."""
     tree = []
 
     full_path = safe_join(directory, current_path) if current_path else directory
@@ -161,11 +163,15 @@ def build_directory_tree(directory, current_path=''):
             entry_path = os.path.join(full_path, entry)
             if os.path.isdir(entry_path):
                 rel_path = os.path.join(current_path, entry) if current_path else entry
-                folders.append({
+                folder_node = {
                     'name': entry,
                     'path': rel_path,
-                    'type': 'folder'
-                })
+                    'type': 'folder',
+                    'children': []
+                }
+                # Recursively get subfolders
+                folder_node['children'] = build_directory_tree(directory, rel_path)
+                folders.append(folder_node)
 
         folders.sort(key=lambda x: x['name'].lower())
         tree.extend(folders)

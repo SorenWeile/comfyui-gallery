@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ComfyUI Gallery</title>
+
     <style>
         * {
             margin: 0;
@@ -17,6 +18,46 @@
             color: #e0e0e0;
             overflow: hidden;
             height: 100vh;
+        }
+
+        .header {
+            background: #2d2d2d;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        h1 {
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        .controls {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .btn {
+            background: #4a9eff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.2s;
+        }
+
+        .btn:hover {
+            background: #3a8eef;
+        }
+
+        .stats {
+            color: #999;
+            font-size: 14px;
         }
 
         .main-container {
@@ -75,20 +116,6 @@
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
-        }
-
-        .tree-item-toggle {
-            width: 16px;
-            height: 16px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 10px;
-            color: #999;
-        }
-
-        .tree-children {
-            padding-left: 20px;
         }
 
         .metadata-panel {
@@ -193,130 +220,20 @@
 
         .gallery-container {
             flex: 1;
-            overflow-y: auto;
+            overflow: hidden;
             background: #1a1a1a;
-        }
-
-        .header {
-            background: #2d2d2d;
-            padding: 20px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
-
-        .header h1 {
-            font-size: 24px;
-            font-weight: 600;
-            color: #fff;
-            display: inline-block;
-        }
-
-        .controls {
-            float: right;
-            display: flex;
-            gap: 10px;
-            align-items: center;
-        }
-
-        .btn {
-            background: #4a9eff;
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 14px;
-            transition: background 0.2s;
-        }
-
-        .btn:hover {
-            background: #3a8eef;
-        }
-
-        .stats {
-            color: #999;
-            font-size: 14px;
-        }
-
-        .container {
-            padding: 30px 20px;
-        }
-
-        .gallery {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-            gap: 20px;
-        }
-
-        .gallery-item {
-            position: relative;
-            background: #2d2d2d;
-            border-radius: 8px;
-            overflow: hidden;
-            cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
-            aspect-ratio: 1;
-        }
-
-        .gallery-item:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 8px 24px rgba(0,0,0,0.4);
-        }
-
-        .gallery-item img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            display: block;
-        }
-
-        .folder-item {
-            position: relative;
-            background: #2d2d2d;
-            border-radius: 8px;
-            overflow: hidden;
-            cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
-            aspect-ratio: 1;
             display: flex;
             flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            border: 2px solid #3a3a3a;
-        }
-
-        .folder-item:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 8px 24px rgba(0,0,0,0.4);
-            border-color: #4a9eff;
-        }
-
-        .folder-icon {
-            font-size: 64px;
-            margin-bottom: 12px;
-        }
-
-        .folder-name {
-            color: #e0e0e0;
-            font-size: 14px;
-            font-weight: 500;
-            text-align: center;
-            padding: 0 12px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-            max-width: 100%;
         }
 
         .breadcrumb {
-            margin-bottom: 20px;
+            padding: 16px 20px;
             display: flex;
             align-items: center;
             gap: 8px;
             font-size: 14px;
             color: #999;
+            border-bottom: 1px solid #3a3a3a;
         }
 
         .breadcrumb-item {
@@ -339,142 +256,168 @@
             cursor: default;
         }
 
-        .image-info {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
-            padding: 12px;
-            color: white;
-            font-size: 12px;
-            opacity: 0;
-            transition: opacity 0.2s;
-        }
-
-        .gallery-item:hover .image-info {
-            opacity: 1;
-        }
-
-        .image-name {
-            font-weight: 500;
-            margin-bottom: 4px;
+        .detail-view {
+            flex: 1;
+            background: #1a1a1a;
+            position: relative;
             overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-
-        .image-date {
-            color: #bbb;
-            font-size: 11px;
-        }
-
-        /* Lightbox */
-        .lightbox {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.95);
-            z-index: 1000;
+            display: flex;
             align-items: center;
             justify-content: center;
         }
 
-        .lightbox.active {
-            display: flex;
-        }
-
-        .lightbox-content {
-            max-width: 90%;
-            max-height: 90%;
+        .detail-image-wrapper {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
             position: relative;
+            cursor: grab;
         }
 
-        .lightbox-image {
-            max-width: 100%;
-            max-height: 90vh;
-            object-fit: contain;
+        .detail-image-wrapper:active {
+            cursor: grabbing;
         }
 
-        .lightbox-close {
+        .detail-image {
             position: absolute;
-            top: 20px;
-            right: 20px;
-            background: rgba(255,255,255,0.2);
+            top: 50%;
+            left: 50%;
+            transform-origin: center center;
+            transition: transform 0.1s ease-out;
+            max-width: none;
+            max-height: none;
+        }
+
+        .detail-empty {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #666;
+            font-size: 18px;
+        }
+
+        .detail-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(0,0,0,0.7);
             color: white;
             border: none;
             width: 40px;
             height: 40px;
             border-radius: 50%;
-            cursor: pointer;
             font-size: 24px;
-            line-height: 1;
+            cursor: pointer;
+            z-index: 100;
             transition: background 0.2s;
         }
 
-        .lightbox-close:hover {
-            background: rgba(255,255,255,0.3);
+        .detail-nav:hover {
+            background: rgba(0,0,0,0.9);
         }
 
-        .lightbox-nav {
-            position: absolute;
-            top: 50%;
-            transform: translateY(-50%);
-            background: rgba(255,255,255,0.2);
-            color: white;
-            border: none;
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            cursor: pointer;
-            font-size: 24px;
-            transition: background 0.2s;
-        }
-
-        .lightbox-nav:hover {
-            background: rgba(255,255,255,0.3);
-        }
-
-        .lightbox-prev {
+        .detail-prev {
             left: 20px;
         }
 
-        .lightbox-next {
+        .detail-next {
             right: 20px;
         }
 
-        .lightbox-info {
+        .zoom-controls {
             position: absolute;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 8px;
+            z-index: 100;
+        }
+
+        .zoom-btn {
             background: rgba(0,0,0,0.7);
             color: white;
-            padding: 12px 20px;
+            border: none;
+            width: 36px;
+            height: 36px;
             border-radius: 6px;
-            font-size: 14px;
-        }
-
-        .loading {
-            text-align: center;
-            padding: 60px 20px;
-            color: #999;
+            cursor: pointer;
             font-size: 18px;
+            transition: background 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
-        .empty {
+        .zoom-btn:hover {
+            background: rgba(0,0,0,0.9);
+        }
+
+        .thumbnails-container {
+            height: 200px;
+            background: #2d2d2d;
+            border-top: 1px solid #3a3a3a;
+            overflow-x: auto;
+            overflow-y: hidden;
+            flex-shrink: 0;
+        }
+
+        .thumbnails-scroll {
+            display: flex;
+            gap: 12px;
+            padding: 12px 20px;
+            height: 100%;
+        }
+
+        .thumbnail-item {
+            height: 100%;
+            aspect-ratio: 1;
+            flex-shrink: 0;
+            cursor: pointer;
+            border-radius: 6px;
+            overflow: hidden;
+            border: 3px solid transparent;
+            transition: border-color 0.2s, transform 0.2s;
+        }
+
+        .thumbnail-item:hover {
+            transform: scale(1.05);
+        }
+
+        .thumbnail-item.active {
+            border-color: #4a9eff;
+        }
+
+        .thumbnail-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .folder-thumbnail {
+            background: #3a3a3a;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .folder-icon-small {
+            font-size: 32px;
+            margin-bottom: 4px;
+        }
+
+        .folder-name-small {
+            font-size: 11px;
+            color: #e0e0e0;
             text-align: center;
-            padding: 60px 20px;
-            color: #999;
-        }
-
-        .empty-icon {
-            font-size: 64px;
-            margin-bottom: 20px;
-            opacity: 0.5;
+            padding: 0 4px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            max-width: 100%;
         }
 
         /* Context Menu */
@@ -510,15 +453,6 @@
             background: #3a3a3a;
         }
 
-        .context-menu-item.disabled {
-            opacity: 0.4;
-            cursor: not-allowed;
-        }
-
-        .context-menu-item.disabled:hover {
-            background: transparent;
-        }
-
         .context-menu-icon {
             width: 16px;
             text-align: center;
@@ -530,13 +464,14 @@
             margin: 4px 0;
         }
 
-        .context-menu-label {
-            flex: 1;
+        @keyframes slideIn {
+            from { transform: translateX(400px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
         }
 
-        .context-menu-shortcut {
-            color: #999;
-            font-size: 11px;
+        @keyframes slideOut {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(400px); opacity: 0; }
         }
     </style>
 </head>
@@ -563,15 +498,29 @@
 
         <!-- Center: Gallery -->
         <div class="gallery-container">
-            <div class="container">
-                <div id="breadcrumb" class="breadcrumb" style="display: none;"></div>
-                <div id="loading" class="loading">Loading images...</div>
-                <div id="empty" class="empty" style="display: none;">
-                    <div class="empty-icon">🖼️</div>
-                    <h2>No images or folders yet</h2>
-                    <p>Generate some images in ComfyUI to see them here!</p>
+            <div id="breadcrumb" class="breadcrumb" style="display: none;"></div>
+
+            <!-- Detail View -->
+            <div id="detailView" class="detail-view">
+                <button class="detail-nav detail-prev" onclick="navigateDetail(-1)">‹</button>
+                <button class="detail-nav detail-next" onclick="navigateDetail(1)">›</button>
+
+                <div class="zoom-controls">
+                    <button class="zoom-btn" onclick="zoomIn()" title="Zoom In">+</button>
+                    <button class="zoom-btn" onclick="zoomOut()" title="Zoom Out">−</button>
+                    <button class="zoom-btn" onclick="resetZoom()" title="Reset">⟲</button>
+                    <button class="zoom-btn" onclick="fitToScreen()" title="Fit to Screen">⛶</button>
                 </div>
-                <div id="gallery" class="gallery"></div>
+
+                <div class="detail-empty" id="detailEmpty">Select an image to view</div>
+                <div class="detail-image-wrapper" id="imageWrapper" style="display: none;">
+                    <img id="detailImage" class="detail-image" src="" alt="">
+                </div>
+            </div>
+
+            <!-- Thumbnails -->
+            <div id="thumbnails" class="thumbnails-container">
+                <div class="thumbnails-scroll" id="thumbnailsScroll"></div>
             </div>
         </div>
 
@@ -583,16 +532,6 @@
                     Select an image to view its metadata
                 </div>
             </div>
-        </div>
-    </div>
-
-    <div id="lightbox" class="lightbox" onclick="closeLightbox(event)">
-        <button class="lightbox-close" onclick="closeLightbox()">×</button>
-        <button class="lightbox-nav lightbox-prev" onclick="navigateLightbox(-1); event.stopPropagation();">‹</button>
-        <button class="lightbox-nav lightbox-next" onclick="navigateLightbox(1); event.stopPropagation();">›</button>
-        <div class="lightbox-content">
-            <img id="lightbox-image" class="lightbox-image" src="" alt="">
-            <div class="lightbox-info" id="lightbox-info"></div>
         </div>
     </div>
 
@@ -619,21 +558,24 @@
             <span class="context-menu-icon">⚙️</span>
             <span class="context-menu-label">Copy Workflow</span>
         </div>
-        <div class="context-menu-separator"></div>
-        <div class="context-menu-item" data-action="open-lightbox">
-            <span class="context-menu-icon">🔍</span>
-            <span class="context-menu-label">Open in Lightbox</span>
-        </div>
     </div>
 
     <script>
         let images = [];
-        let currentImageIndex = 0;
+        let folders = [];
+        let currentImageIndex = -1;
         let currentPath = '';
         let selectedImage = null;
-        let expandedFolders = new Set(['']);
         let contextMenuTarget = null;
-        let contextMenuType = null; // 'image' or 'folder'
+        let contextMenuType = null;
+
+        // Zoom/Pan state
+        let scale = 1;
+        let panX = 0;
+        let panY = 0;
+        let isDragging = false;
+        let startX = 0;
+        let startY = 0;
 
         // Context Menu Functions
         function showContextMenu(e, target, type) {
@@ -644,36 +586,30 @@
             contextMenuTarget = target;
             contextMenuType = type;
 
-            // Show/hide menu items based on type
             const downloadItem = contextMenu.querySelector('[data-action="download"]');
             const downloadFolderItem = contextMenu.querySelector('[data-action="download-folder"]');
             const copyMetadataItem = contextMenu.querySelector('[data-action="copy-metadata"]');
             const copyWorkflowItem = contextMenu.querySelector('[data-action="copy-workflow"]');
-            const openLightboxItem = contextMenu.querySelector('[data-action="open-lightbox"]');
 
             if (type === 'image') {
                 downloadItem.style.display = 'flex';
                 downloadFolderItem.style.display = 'none';
                 copyMetadataItem.style.display = 'flex';
                 copyWorkflowItem.style.display = 'flex';
-                openLightboxItem.style.display = 'flex';
             } else if (type === 'folder') {
                 downloadItem.style.display = 'none';
                 downloadFolderItem.style.display = 'flex';
                 copyMetadataItem.style.display = 'none';
                 copyWorkflowItem.style.display = 'none';
-                openLightboxItem.style.display = 'none';
             }
 
-            // Position menu
             contextMenu.style.left = e.pageX + 'px';
             contextMenu.style.top = e.pageY + 'px';
             contextMenu.classList.add('active');
         }
 
         function hideContextMenu() {
-            const contextMenu = document.getElementById('contextMenu');
-            contextMenu.classList.remove('active');
+            document.getElementById('contextMenu').classList.remove('active');
             contextMenuTarget = null;
             contextMenuType = null;
         }
@@ -683,33 +619,19 @@
 
             switch (action) {
                 case 'download':
-                    if (contextMenuType === 'image') {
-                        downloadImage(contextMenuTarget.path);
-                    }
+                    if (contextMenuType === 'image') downloadImage(contextMenuTarget.path);
                     break;
                 case 'download-folder':
-                    if (contextMenuType === 'folder') {
-                        downloadFolder(contextMenuTarget.path);
-                    }
+                    if (contextMenuType === 'folder') downloadFolder(contextMenuTarget.path);
                     break;
                 case 'copy-path':
                     copyToClipboard(contextMenuTarget.path);
                     break;
                 case 'copy-metadata':
-                    if (contextMenuType === 'image') {
-                        await copyMetadataToClipboard(contextMenuTarget.path);
-                    }
+                    if (contextMenuType === 'image') await copyMetadataToClipboard(contextMenuTarget.path);
                     break;
                 case 'copy-workflow':
-                    if (contextMenuType === 'image') {
-                        await copyWorkflowToClipboard(contextMenuTarget.path);
-                    }
-                    break;
-                case 'open-lightbox':
-                    if (contextMenuType === 'image') {
-                        const index = images.findIndex(img => img.path === contextMenuTarget.path);
-                        if (index !== -1) openLightbox(index);
-                    }
+                    if (contextMenuType === 'image') await copyWorkflowToClipboard(contextMenuTarget.path);
                     break;
             }
 
@@ -727,9 +649,7 @@
         function copyToClipboard(text) {
             navigator.clipboard.writeText(text).then(() => {
                 showNotification('Path copied to clipboard!');
-            }).catch(err => {
-                console.error('Failed to copy:', err);
-            });
+            }).catch(err => console.error('Failed to copy:', err));
         }
 
         async function copyMetadataToClipboard(imagePath) {
@@ -759,7 +679,6 @@
         }
 
         function showNotification(message) {
-            // Simple notification - you can enhance this later
             const notification = document.createElement('div');
             notification.textContent = message;
             notification.style.cssText = `
@@ -780,30 +699,13 @@
             }, 2000);
         }
 
-        // Add animation styles
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes slideIn {
-                from { transform: translateX(400px); opacity: 0; }
-                to { transform: translateX(0); opacity: 1; }
-            }
-            @keyframes slideOut {
-                from { transform: translateX(0); opacity: 1; }
-                to { transform: translateX(400px); opacity: 0; }
-            }
-        `;
-        document.head.appendChild(style);
-
-        // Context menu event listeners
         document.addEventListener('click', hideContextMenu);
         document.addEventListener('contextmenu', (e) => {
-            // Only hide if not right-clicking on an image or folder
-            if (!e.target.closest('.gallery-item') && !e.target.closest('.folder-item')) {
+            if (!e.target.closest('.thumbnail-item')) {
                 hideContextMenu();
             }
         });
 
-        // Context menu item clicks
         document.querySelectorAll('.context-menu-item').forEach(item => {
             item.addEventListener('click', () => {
                 const action = item.getAttribute('data-action');
@@ -811,12 +713,11 @@
             });
         });
 
-        async function loadDirectoryTree(path = '') {
+        // Directory Tree Functions
+        async function loadDirectoryTree() {
             try {
-                const url = path ? `/api/tree/${path}` : '/api/tree';
-                const response = await fetch(url);
-                const folders = await response.json();
-                return folders;
+                const response = await fetch('/api/tree');
+                return await response.json();
             } catch (error) {
                 console.error('Error loading tree:', error);
                 return [];
@@ -827,7 +728,6 @@
             const treeView = document.getElementById('treeView');
             treeView.innerHTML = '';
 
-            // Add root item
             const rootItem = document.createElement('div');
             rootItem.className = currentPath === '' ? 'tree-item active' : 'tree-item';
             rootItem.dataset.path = '';
@@ -838,13 +738,11 @@
             `;
             treeView.appendChild(rootItem);
 
-            // Build tree recursively
-            await buildTreeLevel(treeView, '', 0);
+            const folders = await loadDirectoryTree();
+            buildTreeLevel(treeView, folders, 0);
         }
 
-        async function buildTreeLevel(container, parentPath, level) {
-            const folders = await loadDirectoryTree(parentPath);
-
+        function buildTreeLevel(container, folders, level) {
             for (const folder of folders) {
                 const itemContainer = document.createElement('div');
                 itemContainer.style.paddingLeft = `${level * 20}px`;
@@ -864,13 +762,13 @@
                 itemContainer.appendChild(item);
                 container.appendChild(itemContainer);
 
-                // Recursively load subfolders if this folder is expanded
-                if (expandedFolders.has(folder.path)) {
-                    await buildTreeLevel(container, folder.path, level + 1);
+                if (folder.children && folder.children.length > 0) {
+                    buildTreeLevel(container, folder.children, level + 1);
                 }
             }
         }
 
+        // Metadata Functions
         function toggleMetadataSection(sectionId) {
             const content = document.getElementById(`${sectionId}-content`);
             const toggle = document.getElementById(`${sectionId}-toggle`);
@@ -879,7 +777,6 @@
                 content.classList.toggle('collapsed');
                 toggle.classList.toggle('collapsed');
 
-                // Save state to localStorage
                 const isCollapsed = content.classList.contains('collapsed');
                 localStorage.setItem(`metadata-${sectionId}`, isCollapsed ? 'collapsed' : 'expanded');
             }
@@ -887,7 +784,6 @@
 
         function getMetadataSectionState(sectionId) {
             const saved = localStorage.getItem(`metadata-${sectionId}`);
-            // Default: Basic Info expanded, Prompt/Workflow collapsed
             if (saved) return saved === 'collapsed';
             return ['prompt', 'workflow'].includes(sectionId);
         }
@@ -991,89 +887,46 @@
             return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
         }
 
+        // Gallery Functions
         async function loadImages() {
-            const loading = document.getElementById('loading');
-            const empty = document.getElementById('empty');
-            const gallery = document.getElementById('gallery');
             const stats = document.getElementById('stats');
-            const breadcrumb = document.getElementById('breadcrumb');
-
-            loading.style.display = 'block';
-            empty.style.display = 'none';
-            gallery.innerHTML = '';
 
             try {
                 const url = currentPath ? `/api/browse/${currentPath}` : '/api/browse';
                 const response = await fetch(url);
                 const data = await response.json();
 
-                loading.style.display = 'none';
+                folders = data.folders || [];
+                images = data.images || [];
 
-                const folders = data.folders || [];
-                const imageList = data.images || [];
-                images = imageList;
-
-                // Update breadcrumb
                 updateBreadcrumb(currentPath);
-
-                if (folders.length === 0 && images.length === 0) {
-                    empty.style.display = 'block';
-                    stats.textContent = 'No items';
-                    return;
-                }
-
-                const totalItems = folders.length + images.length;
                 stats.textContent = `${folders.length} folder${folders.length !== 1 ? 's' : ''}, ${images.length} image${images.length !== 1 ? 's' : ''}`;
 
-                // Render folders first
-                folders.forEach((folder) => {
-                    const item = document.createElement('div');
-                    item.className = 'folder-item';
-                    item.onclick = () => navigateToFolder(folder.path);
-                    item.oncontextmenu = (e) => showContextMenu(e, folder, 'folder');
+                renderThumbnails();
 
-                    item.innerHTML = `
-                        <div class="folder-icon">📁</div>
-                        <div class="folder-name">${folder.name}</div>
-                    `;
-
-                    gallery.appendChild(item);
-                });
-
-                // Then render images
-                images.forEach((image, index) => {
-                    const item = document.createElement('div');
-                    item.className = 'gallery-item';
-                    item.onclick = () => {
-                        selectedImage = image;
-                        loadMetadata(image.path);
-                        // Highlight selected image
-                        document.querySelectorAll('.gallery-item').forEach(i => i.style.outline = '');
-                        item.style.outline = '3px solid #4a9eff';
-                    };
-                    item.ondblclick = () => openLightbox(index);
-                    item.oncontextmenu = (e) => showContextMenu(e, image, 'image');
-
-                    item.innerHTML = `
-                        <img src="/thumbnail/${image.path}" alt="${image.name}" loading="lazy">
-                        <div class="image-info">
-                            <div class="image-name">${image.name}</div>
-                            <div class="image-date">${image.modified_str}</div>
-                        </div>
-                    `;
-
-                    gallery.appendChild(item);
-                });
+                if (images.length > 0) {
+                    openDetailView(0);
+                } else {
+                    showEmptyState();
+                }
             } catch (error) {
-                loading.textContent = 'Error loading items: ' + error.message;
+                console.error('Error loading items:', error);
+                stats.textContent = 'Error loading items';
             }
         }
 
         async function navigateToFolder(path) {
             currentPath = path;
-            expandedFolders.add(path);
             await buildTree();
             await loadImages();
+        }
+
+        function showEmptyState() {
+            document.getElementById('detailEmpty').style.display = 'flex';
+            document.getElementById('imageWrapper').style.display = 'none';
+            document.getElementById('detailEmpty').textContent = folders.length > 0
+                ? 'No images in this folder'
+                : 'No images yet. Generate some in ComfyUI!';
         }
 
         function updateBreadcrumb(path) {
@@ -1082,7 +935,6 @@
 
             const parts = path ? path.split(/[\\/]/).filter(p => p) : [];
 
-            // Home link
             const homeLink = document.createElement('span');
             homeLink.className = 'breadcrumb-item';
             homeLink.textContent = '🏠 Home';
@@ -1096,7 +948,6 @@
 
             breadcrumb.style.display = 'flex';
 
-            // Build path links
             let accumulatedPath = '';
             parts.forEach((part, index) => {
                 const separator = document.createElement('span');
@@ -1120,51 +971,171 @@
             });
         }
 
-        function openLightbox(index) {
+        // Detail View with Zoom/Pan
+        function openDetailView(index) {
+            if (images.length === 0) return;
+
             currentImageIndex = index;
-            const lightbox = document.getElementById('lightbox');
-            const image = document.getElementById('lightbox-image');
-            const info = document.getElementById('lightbox-info');
-
             const currentImage = images[index];
-            image.src = `/image/${currentImage.path}`;
-            info.textContent = `${currentImage.name} - ${currentImage.modified_str}`;
 
-            lightbox.classList.add('active');
-            document.body.style.overflow = 'hidden';
+            selectedImage = currentImage;
+            loadMetadata(currentImage.path);
+
+            const detailEmpty = document.getElementById('detailEmpty');
+            const imageWrapper = document.getElementById('imageWrapper');
+            const detailImage = document.getElementById('detailImage');
+
+            detailEmpty.style.display = 'none';
+            imageWrapper.style.display = 'block';
+
+            detailImage.src = `/image/${currentImage.path}`;
+            detailImage.onload = () => {
+                resetZoom();
+            };
+
+            renderThumbnails();
         }
 
-        function closeLightbox(event) {
-            if (event && event.target !== event.currentTarget && !event.target.classList.contains('lightbox-close')) {
-                return;
-            }
-            const lightbox = document.getElementById('lightbox');
-            lightbox.classList.remove('active');
-            document.body.style.overflow = 'auto';
-        }
+        function navigateDetail(direction) {
+            if (images.length === 0) return;
 
-        function navigateLightbox(direction) {
             currentImageIndex += direction;
             if (currentImageIndex < 0) currentImageIndex = images.length - 1;
             if (currentImageIndex >= images.length) currentImageIndex = 0;
-            openLightbox(currentImageIndex);
+
+            openDetailView(currentImageIndex);
         }
+
+        // Zoom and Pan Functions
+        function updateImageTransform() {
+            const image = document.getElementById('detailImage');
+            image.style.transform = `translate(-50%, -50%) translate(${panX}px, ${panY}px) scale(${scale})`;
+        }
+
+        function zoomIn() {
+            scale = Math.min(scale * 1.2, 10);
+            updateImageTransform();
+        }
+
+        function zoomOut() {
+            scale = Math.max(scale / 1.2, 0.1);
+            updateImageTransform();
+        }
+
+        function resetZoom() {
+            scale = 1;
+            panX = 0;
+            panY = 0;
+            updateImageTransform();
+        }
+
+        function fitToScreen() {
+            const image = document.getElementById('detailImage');
+            const wrapper = document.getElementById('imageWrapper');
+
+            const wrapperWidth = wrapper.clientWidth;
+            const wrapperHeight = wrapper.clientHeight;
+            const imageWidth = image.naturalWidth;
+            const imageHeight = image.naturalHeight;
+
+            const scaleX = wrapperWidth / imageWidth;
+            const scaleY = wrapperHeight / imageHeight;
+            scale = Math.min(scaleX, scaleY) * 0.95;
+
+            panX = 0;
+            panY = 0;
+            updateImageTransform();
+        }
+
+        // Pan with mouse
+        const imageWrapper = document.getElementById('imageWrapper');
+
+        imageWrapper.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            startX = e.clientX - panX;
+            startY = e.clientY - panY;
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+            panX = e.clientX - startX;
+            panY = e.clientY - startY;
+            updateImageTransform();
+        });
+
+        document.addEventListener('mouseup', () => {
+            isDragging = false;
+        });
+
+        // Zoom with mouse wheel
+        imageWrapper.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            if (e.deltaY < 0) {
+                scale = Math.min(scale * 1.1, 10);
+            } else {
+                scale = Math.max(scale / 1.1, 0.1);
+            }
+            updateImageTransform();
+        });
+
+        function renderThumbnails() {
+            const thumbnailsScroll = document.getElementById('thumbnailsScroll');
+            thumbnailsScroll.innerHTML = '';
+
+            // Folders
+            folders.forEach((folder) => {
+                const thumb = document.createElement('div');
+                thumb.className = 'thumbnail-item folder-thumbnail';
+                thumb.onclick = () => navigateToFolder(folder.path);
+                thumb.oncontextmenu = (e) => showContextMenu(e, folder, 'folder');
+
+                thumb.innerHTML = `
+                    <div class="folder-icon-small">📁</div>
+                    <div class="folder-name-small">${folder.name}</div>
+                `;
+                thumbnailsScroll.appendChild(thumb);
+            });
+
+            // Images
+            images.forEach((image, index) => {
+                const thumb = document.createElement('div');
+                thumb.className = 'thumbnail-item';
+                if (index === currentImageIndex) {
+                    thumb.classList.add('active');
+                }
+                thumb.onclick = () => openDetailView(index);
+                thumb.oncontextmenu = (e) => showContextMenu(e, image, 'image');
+
+                thumb.innerHTML = `<img src="/thumbnail/${image.path}" alt="${image.name}">`;
+                thumbnailsScroll.appendChild(thumb);
+            });
+
+            // Scroll active into view
+            const activeThumb = thumbnailsScroll.querySelector('.thumbnail-item.active');
+            if (activeThumb) {
+                activeThumb.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+            }
+        }
+
+        // Keyboard Navigation
+        document.addEventListener('keydown', (e) => {
+            if (images.length === 0) return;
+
+            if (e.key === 'ArrowLeft') {
+                e.preventDefault();
+                navigateDetail(-1);
+            }
+            if (e.key === 'ArrowRight') {
+                e.preventDefault();
+                navigateDetail(1);
+            }
+        });
 
         function refreshGallery() {
             loadImages();
         }
 
-        // Keyboard navigation
-        document.addEventListener('keydown', (e) => {
-            const lightbox = document.getElementById('lightbox');
-            if (!lightbox.classList.contains('active')) return;
-
-            if (e.key === 'Escape') closeLightbox();
-            if (e.key === 'ArrowLeft') navigateLightbox(-1);
-            if (e.key === 'ArrowRight') navigateLightbox(1);
-        });
-
-        // Load images and tree on page load
+        // Initialize
         async function initGallery() {
             await buildTree();
             await loadImages();

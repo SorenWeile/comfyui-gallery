@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -e
 
-git clone https://github.com/YOUR_USERNAME/comfyui-gallery.git /comfyui-gallery
+git clone --branch main --single-branch https://github.com/SorenWeile/comfyui-gallery.git /comfyui-gallery
 cd /comfyui-gallery
-git checkout tags/${GALLERY_VERSION}
-pip3 install --no-cache-dir -r requirements.txt
+git pull origin main
+pip install --ignore-installed -r requirements.txt
