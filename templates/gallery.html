@@ -414,8 +414,32 @@
 
         .thumbnails-scroll {
             display: flex;
+            padding: 10px;
             gap: 12px;
             height: 100%;
+        }
+
+        /* Image Info Bar */
+        .image-info-bar {
+            display: flex;
+            gap: 24px;
+            padding: 8px 20px;
+            background: #252525;
+            font-size: 12px;
+            flex-shrink: 0;
+        }
+
+        .image-info-item {
+            display: flex;
+            gap: 6px;
+        }
+
+        .image-info-label {
+            color: #888;
+        }
+
+        .image-info-value {
+            color: #e0e0e0;
         }
 
         .thumbnail-item {
@@ -628,6 +652,22 @@
             <!-- Thumbnails -->
             <div id="thumbnails" class="thumbnails-container">
                 <div class="thumbnails-scroll" id="thumbnailsScroll"></div>
+            </div>
+
+            <!-- Image Info Bar -->
+            <div class="image-info-bar" id="imageInfoBar">
+                <div class="image-info-item">
+                    <span class="image-info-label">Name:</span>
+                    <span class="image-info-value" id="infoName">-</span>
+                </div>
+                <div class="image-info-item">
+                    <span class="image-info-label">Size:</span>
+                    <span class="image-info-value" id="infoSize">-</span>
+                </div>
+                <div class="image-info-item">
+                    <span class="image-info-label">Modified:</span>
+                    <span class="image-info-value" id="infoDate">-</span>
+                </div>
             </div>
         </div>
 
@@ -1288,7 +1328,16 @@
                 fitToScreen();
             };
 
+            // Update image info bar
+            updateImageInfo(currentImage);
+
             updateActiveThumbnail();
+        }
+
+        function updateImageInfo(image) {
+            document.getElementById('infoName').textContent = image.name;
+            document.getElementById('infoSize').textContent = formatFileSize(image.size);
+            document.getElementById('infoDate').textContent = image.modified_str;
         }
 
         function updateActiveThumbnail() {
