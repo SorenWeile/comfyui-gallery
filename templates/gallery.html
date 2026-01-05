@@ -366,6 +366,26 @@
             flex-shrink: 0;
         }
 
+        /* Custom scrollbar for thumbnails */
+        .thumbnails-container::-webkit-scrollbar {
+            height: 16px;
+        }
+
+        .thumbnails-container::-webkit-scrollbar-track {
+            background: #1a1a1a;
+            border-radius: 8px;
+        }
+
+        .thumbnails-container::-webkit-scrollbar-thumb {
+            background: #4a9eff;
+            border-radius: 8px;
+            border: 2px solid #1a1a1a;
+        }
+
+        .thumbnails-container::-webkit-scrollbar-thumb:hover {
+            background: #3a8eef;
+        }
+
         .thumbnails-scroll {
             display: flex;
             gap: 12px;
@@ -1069,7 +1089,9 @@
 
                 renderThumbnails();
 
+                // Pre-generate thumbnails in background
                 if (images.length > 0) {
+                    preGenerateThumbnails();
                     openDetailView(0);
                 } else {
                     showEmptyState();
@@ -1087,6 +1109,79 @@
             currentPath = path;
             await buildTree();
             await loadImages();
+        }
+
+        let thumbnailRetryInterval = null;
+
+        async function preGenerateThumbnails() {
+            // Pre-generate thumbnails for all images in the current folder
+            if (images.length === 0) return;
+
+            try {
+                const imagePaths = images.map(img => img.path);
+
+                console.log(`Starting thumbnail generation for ${imagePaths.length} images...`);
+
+                // Send request to generate thumbnails in background
+                fetch('/api/generate-thumbnails', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ images: imagePaths })
+                }).then(response => response.json())
+                  .then(data => {
+                      console.log(`Thumbnail generation ${data.status}: ${data.total} images queued`);
+
+                      // Start polling to retry failed thumbnails
+                      startThumbnailRetry();
+                  })
+                  .catch(error => {
+                      console.error('Error pre-generating thumbnails:', error);
+                  });
+            } catch (error) {
+                console.error('Error in preGenerateThumbnails:', error);
+            }
+        }
+
+        function startThumbnailRetry() {
+            // Clear any existing interval
+            if (thumbnailRetryInterval) {
+                clearInterval(thumbnailRetryInterval);
+            }
+
+            let retryCount = 0;
+            const maxRetries = 15; // Retry for up to 45 seconds (15 * 3s)
+
+            thumbnailRetryInterval = setInterval(() => {
+                retryCount++;
+
+                // Find all images that failed to load (opacity 0.3)
+                const allImages = document.querySelectorAll('#thumbnailsScroll img');
+                const failedImages = Array.from(allImages).filter(img => {
+                    const opacity = parseFloat(window.getComputedStyle(img).opacity);
+                    return opacity < 0.5 && img.src.includes('/thumbnail/');
+                });
+
+                if (failedImages.length === 0 || retryCount >= maxRetries) {
+                    clearInterval(thumbnailRetryInterval);
+                    thumbnailRetryInterval = null;
+                    if (failedImages.length === 0) {
+                        console.log('All thumbnails loaded successfully!');
+                    } else {
+                        console.log(`Stopped retrying. ${failedImages.length} thumbnails still pending.`);
+                    }
+                    return;
+                }
+
+                // Retry loading failed images
+                failedImages.forEach(img => {
+                    const originalSrc = img.src.split('?')[0]; // Remove any existing cache buster
+                    img.src = originalSrc + `?retry=${retryCount}`;
+                });
+
+                console.log(`Retrying ${failedImages.length} thumbnails... (attempt ${retryCount}/${maxRetries})`);
+            }, 3000); // Retry every 3 seconds
         }
 
         function showEmptyState() {
@@ -1164,7 +1259,7 @@
 
             detailImage.src = `/image/${currentImage.path}`;
             detailImage.onload = () => {
-                resetZoom();
+                fitToScreen();
             };
 
             updateActiveThumbnail();
@@ -1298,7 +1393,7 @@
                 thumbnailsScroll.appendChild(thumb);
             });
 
-            // Images with lazy loading
+            // Images - load directly, no lazy loading complexity
             images.forEach((image, index) => {
                 const thumb = document.createElement('div');
                 thumb.className = 'thumbnail-item';
@@ -1308,19 +1403,29 @@
                 thumb.onclick = () => openDetailView(index);
                 thumb.oncontextmenu = (e) => showContextMenu(e, image, 'image');
 
-                // Create img element with lazy loading
+                // Create img element - load directly
                 const img = document.createElement('img');
-                img.dataset.src = `/thumbnail/${image.path}`;
+                img.src = `/thumbnail/${image.path}`;
                 img.alt = image.name;
-                img.className = 'lazy-load';
                 img.style.background = '#2d2d2d';
+                img.loading = 'lazy'; // Use browser native lazy loading
+
+                // Add loading state
+                img.style.opacity = '0';
+                img.style.transition = 'opacity 0.3s';
+
+                img.onload = () => {
+                    img.style.opacity = '1';
+                };
+
+                img.onerror = () => {
+                    img.style.opacity = '0.3';
+                    img.alt = 'Loading...';
+                };
 
                 thumb.appendChild(img);
                 thumbnailsScroll.appendChild(thumb);
             });
-
-            // Initialize lazy loading
-            initLazyLoading();
 
             // Scroll active into view
             const activeThumb = thumbnailsScroll.querySelector('.thumbnail-item.active');
@@ -1329,52 +1434,6 @@
             }
         }
 
-        // Lazy loading using Intersection Observer
-        let lazyLoadObserver = null;
-
-        function initLazyLoading() {
-            // Disconnect existing observer if any
-            if (lazyLoadObserver) {
-                lazyLoadObserver.disconnect();
-            }
-
-            // Create new observer
-            lazyLoadObserver = new IntersectionObserver((entries, observer) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        const img = entry.target;
-                        const src = img.dataset.src;
-
-                        if (src) {
-                            // Add loading placeholder
-                            img.style.opacity = '0.5';
-
-                            img.src = src;
-                            img.onload = () => {
-                                img.style.opacity = '1';
-                                img.classList.remove('lazy-load');
-                            };
-                            img.onerror = () => {
-                                img.style.opacity = '1';
-                                img.alt = 'Failed to load';
-                            };
-
-                            delete img.dataset.src;
-                            observer.unobserve(img);
-                        }
-                    }
-                });
-            }, {
-                root: document.getElementById('thumbnailsScroll'),
-                rootMargin: '50px',
-                threshold: 0.01
-            });
-
-            // Observe all lazy load images
-            document.querySelectorAll('img.lazy-load').forEach(img => {
-                lazyLoadObserver.observe(img);
-            });
-        }
 
         // Keyboard Navigation
         document.addEventListener('keydown', (e) => {

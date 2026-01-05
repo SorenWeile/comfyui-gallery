@@ -4,6 +4,7 @@ import mimetypes
 import json
 import zipfile
 import io
+import threading
 from pathlib import Path
 from datetime import datetime
 from flask import Flask, render_template, send_file, jsonify
@@ -254,6 +255,47 @@ def get_thumbnail_path(image_path):
         return thumbnail_path
 
     return None
+
+def generate_thumbnails_background(image_paths):
+    """Background task to generate thumbnails."""
+    generated = 0
+    total = len(image_paths)
+
+    for i, image_path in enumerate(image_paths):
+        try:
+            thumbnail_path = get_thumbnail_path(image_path)
+            if thumbnail_path:
+                generated += 1
+            print(f"Generated thumbnail {i+1}/{total}: {image_path}")
+        except Exception as e:
+            print(f"Error generating thumbnail for {image_path}: {e}")
+
+    print(f"Thumbnail generation completed: {generated}/{total} successful")
+
+@app.route('/api/generate-thumbnails', methods=['POST'])
+def generate_thumbnails_batch():
+    """Pre-generate thumbnails for a list of images in background."""
+    from flask import request
+    try:
+        data = request.get_json()
+        image_paths = data.get('images', [])
+
+        # Start background thread to generate thumbnails
+        thread = threading.Thread(
+            target=generate_thumbnails_background,
+            args=(image_paths,),
+            daemon=True
+        )
+        thread.start()
+
+        # Return immediately
+        return jsonify({
+            'status': 'started',
+            'total': len(image_paths),
+            'message': 'Thumbnail generation started in background'
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/')
 def index():
