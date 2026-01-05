@@ -286,6 +286,9 @@
             transition: transform 0.1s ease-out;
             max-width: none;
             max-height: none;
+            user-select: none;
+            pointer-events: none;
+            -webkit-user-drag: none;
         }
 
         .detail-empty {
@@ -508,7 +511,7 @@
                 <div class="zoom-controls">
                     <button class="zoom-btn" onclick="zoomIn()" title="Zoom In">+</button>
                     <button class="zoom-btn" onclick="zoomOut()" title="Zoom Out">−</button>
-                    <button class="zoom-btn" onclick="resetZoom()" title="Reset">⟲</button>
+                    <button class="zoom-btn" onclick="downloadCurrentImage()" title="Download">⬇️</button>
                     <button class="zoom-btn" onclick="fitToScreen()" title="Fit to Screen">⛶</button>
                 </div>
 
@@ -603,9 +606,25 @@
                 copyWorkflowItem.style.display = 'none';
             }
 
+            // Show menu first to get its height
             contextMenu.style.left = e.pageX + 'px';
             contextMenu.style.top = e.pageY + 'px';
             contextMenu.classList.add('active');
+
+            // Check if menu would go off bottom of screen
+            const menuRect = contextMenu.getBoundingClientRect();
+            const viewportHeight = window.innerHeight;
+
+            if (menuRect.bottom > viewportHeight) {
+                // Position menu above cursor
+                contextMenu.style.top = (e.pageY - menuRect.height) + 'px';
+            }
+
+            // Check if menu would go off right of screen
+            const viewportWidth = window.innerWidth;
+            if (menuRect.right > viewportWidth) {
+                contextMenu.style.left = (e.pageX - menuRect.width) + 'px';
+            }
         }
 
         function hideContextMenu() {
@@ -757,6 +776,10 @@
                 item.onclick = (e) => {
                     e.stopPropagation();
                     navigateToFolder(folder.path);
+                };
+                item.oncontextmenu = (e) => {
+                    e.stopPropagation();
+                    showContextMenu(e, folder, 'folder');
                 };
 
                 itemContainer.appendChild(item);
@@ -1045,6 +1068,12 @@
             panX = 0;
             panY = 0;
             updateImageTransform();
+        }
+
+        function downloadCurrentImage() {
+            if (currentImageIndex >= 0 && currentImageIndex < images.length) {
+                downloadImage(images[currentImageIndex].path);
+            }
         }
 
         // Pan with mouse
