@@ -476,6 +476,68 @@
             margin-bottom: 20px;
             opacity: 0.5;
         }
+
+        /* Context Menu */
+        .context-menu {
+            position: fixed;
+            background: #2d2d2d;
+            border: 1px solid #3a3a3a;
+            border-radius: 6px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+            z-index: 10000;
+            min-width: 200px;
+            padding: 4px 0;
+            display: none;
+        }
+
+        .context-menu.active {
+            display: block;
+        }
+
+        .context-menu-item {
+            padding: 10px 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13px;
+            color: #e0e0e0;
+            transition: background 0.2s;
+            user-select: none;
+        }
+
+        .context-menu-item:hover {
+            background: #3a3a3a;
+        }
+
+        .context-menu-item.disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .context-menu-item.disabled:hover {
+            background: transparent;
+        }
+
+        .context-menu-icon {
+            width: 16px;
+            text-align: center;
+        }
+
+        .context-menu-separator {
+            height: 1px;
+            background: #3a3a3a;
+            margin: 4px 0;
+        }
+
+        .context-menu-label {
+            flex: 1;
+        }
+
+        .context-menu-shortcut {
+            color: #999;
+            font-size: 11px;
+        }
     </style>
 </head>
 <body>
@@ -534,12 +596,220 @@
         </div>
     </div>
 
+    <!-- Context Menu -->
+    <div id="contextMenu" class="context-menu">
+        <div class="context-menu-item" data-action="download">
+            <span class="context-menu-icon">⬇️</span>
+            <span class="context-menu-label">Download</span>
+        </div>
+        <div class="context-menu-item" data-action="download-folder">
+            <span class="context-menu-icon">📦</span>
+            <span class="context-menu-label">Download Folder as ZIP</span>
+        </div>
+        <div class="context-menu-separator"></div>
+        <div class="context-menu-item" data-action="copy-path">
+            <span class="context-menu-icon">📋</span>
+            <span class="context-menu-label">Copy Path</span>
+        </div>
+        <div class="context-menu-item" data-action="copy-metadata">
+            <span class="context-menu-icon">📝</span>
+            <span class="context-menu-label">Copy Metadata as JSON</span>
+        </div>
+        <div class="context-menu-item" data-action="copy-workflow">
+            <span class="context-menu-icon">⚙️</span>
+            <span class="context-menu-label">Copy Workflow</span>
+        </div>
+        <div class="context-menu-separator"></div>
+        <div class="context-menu-item" data-action="open-lightbox">
+            <span class="context-menu-icon">🔍</span>
+            <span class="context-menu-label">Open in Lightbox</span>
+        </div>
+    </div>
+
     <script>
         let images = [];
         let currentImageIndex = 0;
         let currentPath = '';
         let selectedImage = null;
         let expandedFolders = new Set(['']);
+        let contextMenuTarget = null;
+        let contextMenuType = null; // 'image' or 'folder'
+
+        // Context Menu Functions
+        function showContextMenu(e, target, type) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            const contextMenu = document.getElementById('contextMenu');
+            contextMenuTarget = target;
+            contextMenuType = type;
+
+            // Show/hide menu items based on type
+            const downloadItem = contextMenu.querySelector('[data-action="download"]');
+            const downloadFolderItem = contextMenu.querySelector('[data-action="download-folder"]');
+            const copyMetadataItem = contextMenu.querySelector('[data-action="copy-metadata"]');
+            const copyWorkflowItem = contextMenu.querySelector('[data-action="copy-workflow"]');
+            const openLightboxItem = contextMenu.querySelector('[data-action="open-lightbox"]');
+
+            if (type === 'image') {
+                downloadItem.style.display = 'flex';
+                downloadFolderItem.style.display = 'none';
+                copyMetadataItem.style.display = 'flex';
+                copyWorkflowItem.style.display = 'flex';
+                openLightboxItem.style.display = 'flex';
+            } else if (type === 'folder') {
+                downloadItem.style.display = 'none';
+                downloadFolderItem.style.display = 'flex';
+                copyMetadataItem.style.display = 'none';
+                copyWorkflowItem.style.display = 'none';
+                openLightboxItem.style.display = 'none';
+            }
+
+            // Position menu
+            contextMenu.style.left = e.pageX + 'px';
+            contextMenu.style.top = e.pageY + 'px';
+            contextMenu.classList.add('active');
+        }
+
+        function hideContextMenu() {
+            const contextMenu = document.getElementById('contextMenu');
+            contextMenu.classList.remove('active');
+            contextMenuTarget = null;
+            contextMenuType = null;
+        }
+
+        async function handleContextMenuAction(action) {
+            if (!contextMenuTarget) return;
+
+            switch (action) {
+                case 'download':
+                    if (contextMenuType === 'image') {
+                        downloadImage(contextMenuTarget.path);
+                    }
+                    break;
+                case 'download-folder':
+                    if (contextMenuType === 'folder') {
+                        downloadFolder(contextMenuTarget.path);
+                    }
+                    break;
+                case 'copy-path':
+                    copyToClipboard(contextMenuTarget.path);
+                    break;
+                case 'copy-metadata':
+                    if (contextMenuType === 'image') {
+                        await copyMetadataToClipboard(contextMenuTarget.path);
+                    }
+                    break;
+                case 'copy-workflow':
+                    if (contextMenuType === 'image') {
+                        await copyWorkflowToClipboard(contextMenuTarget.path);
+                    }
+                    break;
+                case 'open-lightbox':
+                    if (contextMenuType === 'image') {
+                        const index = images.findIndex(img => img.path === contextMenuTarget.path);
+                        if (index !== -1) openLightbox(index);
+                    }
+                    break;
+            }
+
+            hideContextMenu();
+        }
+
+        function downloadImage(imagePath) {
+            window.location.href = `/api/download/${imagePath}`;
+        }
+
+        function downloadFolder(folderPath) {
+            window.location.href = `/api/download-folder/${folderPath}`;
+        }
+
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                showNotification('Path copied to clipboard!');
+            }).catch(err => {
+                console.error('Failed to copy:', err);
+            });
+        }
+
+        async function copyMetadataToClipboard(imagePath) {
+            try {
+                const response = await fetch(`/api/metadata/${imagePath}`);
+                const metadata = await response.json();
+                await navigator.clipboard.writeText(JSON.stringify(metadata, null, 2));
+                showNotification('Metadata copied to clipboard!');
+            } catch (err) {
+                console.error('Failed to copy metadata:', err);
+            }
+        }
+
+        async function copyWorkflowToClipboard(imagePath) {
+            try {
+                const response = await fetch(`/api/metadata/${imagePath}`);
+                const metadata = await response.json();
+                if (metadata.workflow) {
+                    await navigator.clipboard.writeText(JSON.stringify(metadata.workflow, null, 2));
+                    showNotification('Workflow copied to clipboard!');
+                } else {
+                    showNotification('No workflow found in image');
+                }
+            } catch (err) {
+                console.error('Failed to copy workflow:', err);
+            }
+        }
+
+        function showNotification(message) {
+            // Simple notification - you can enhance this later
+            const notification = document.createElement('div');
+            notification.textContent = message;
+            notification.style.cssText = `
+                position: fixed;
+                bottom: 20px;
+                right: 20px;
+                background: #4a9eff;
+                color: white;
+                padding: 12px 20px;
+                border-radius: 6px;
+                z-index: 10001;
+                animation: slideIn 0.3s ease-out;
+            `;
+            document.body.appendChild(notification);
+            setTimeout(() => {
+                notification.style.animation = 'slideOut 0.3s ease-out';
+                setTimeout(() => notification.remove(), 300);
+            }, 2000);
+        }
+
+        // Add animation styles
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideIn {
+                from { transform: translateX(400px); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+            @keyframes slideOut {
+                from { transform: translateX(0); opacity: 1; }
+                to { transform: translateX(400px); opacity: 0; }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Context menu event listeners
+        document.addEventListener('click', hideContextMenu);
+        document.addEventListener('contextmenu', (e) => {
+            // Only hide if not right-clicking on an image or folder
+            if (!e.target.closest('.gallery-item') && !e.target.closest('.folder-item')) {
+                hideContextMenu();
+            }
+        });
+
+        // Context menu item clicks
+        document.querySelectorAll('.context-menu-item').forEach(item => {
+            item.addEventListener('click', () => {
+                const action = item.getAttribute('data-action');
+                handleContextMenuAction(action);
+            });
+        });
 
         async function loadDirectoryTree(path = '') {
             try {
@@ -760,6 +1030,7 @@
                     const item = document.createElement('div');
                     item.className = 'folder-item';
                     item.onclick = () => navigateToFolder(folder.path);
+                    item.oncontextmenu = (e) => showContextMenu(e, folder, 'folder');
 
                     item.innerHTML = `
                         <div class="folder-icon">📁</div>
@@ -781,6 +1052,7 @@
                         item.style.outline = '3px solid #4a9eff';
                     };
                     item.ondblclick = () => openLightbox(index);
+                    item.oncontextmenu = (e) => showContextMenu(e, image, 'image');
 
                     item.innerHTML = `
                         <img src="/thumbnail/${image.path}" alt="${image.name}" loading="lazy">

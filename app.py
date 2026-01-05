@@ -2,6 +2,8 @@
 import os
 import mimetypes
 import json
+import zipfile
+import io
 from pathlib import Path
 from datetime import datetime
 from flask import Flask, render_template, send_file, jsonify
@@ -227,6 +229,50 @@ def serve_image(filename):
 def serve_thumbnail(filename):
     """Serve thumbnail (for now, just serve the full image)."""
     return serve_image(filename)
+
+@app.route('/api/download/<path:filename>')
+def download_image(filename):
+    """Download a single image file."""
+    try:
+        safe_path = safe_join(OUTPUT_DIR, filename)
+        if safe_path and os.path.exists(safe_path):
+            return send_file(safe_path, as_attachment=True, download_name=os.path.basename(filename))
+        return "Image not found", 404
+    except Exception as e:
+        return str(e), 404
+
+@app.route('/api/download-folder/<path:folder_path>')
+def download_folder(folder_path=''):
+    """Download a folder as a ZIP file."""
+    try:
+        safe_path = safe_join(OUTPUT_DIR, folder_path)
+        if not safe_path or not os.path.exists(safe_path):
+            return "Folder not found", 404
+
+        # Create ZIP file in memory
+        memory_file = io.BytesIO()
+        with zipfile.ZipFile(memory_file, 'w', zipfile.ZIP_DEFLATED) as zf:
+            # Walk through the folder and add all files
+            for root, dirs, files in os.walk(safe_path):
+                for file in files:
+                    file_path = os.path.join(root, file)
+                    arcname = os.path.relpath(file_path, safe_path)
+                    zf.write(file_path, arcname)
+
+        memory_file.seek(0)
+
+        # Generate a nice folder name for the ZIP
+        folder_name = os.path.basename(folder_path) if folder_path else 'output'
+        zip_filename = f"{folder_name}.zip"
+
+        return send_file(
+            memory_file,
+            mimetype='application/zip',
+            as_attachment=True,
+            download_name=zip_filename
+        )
+    except Exception as e:
+        return str(e), 500
 
 @app.route('/health')
 def health():
