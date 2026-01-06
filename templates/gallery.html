@@ -237,6 +237,251 @@
             word-break: break-all;
         }
 
+        /* Workflow Summary Styles */
+        .workflow-summary-section .metadata-section-title {
+            position: relative;
+        }
+
+        .popup-btn {
+            background: transparent;
+            border: 1px solid #4a9eff;
+            color: #4a9eff;
+            padding: 4px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-left: auto;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .popup-btn:hover {
+            background: #4a9eff;
+            color: #1a1a1a;
+        }
+
+        .summary-item {
+            margin-bottom: 16px;
+            background: #242424;
+            border-radius: 6px;
+            padding: 12px;
+            border-left: 3px solid #4a9eff;
+        }
+
+        .summary-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #4a9eff;
+            font-size: 12px;
+        }
+
+        .summary-icon {
+            font-size: 16px;
+        }
+
+        .summary-value {
+            color: #e0e0e0;
+            font-size: 13px;
+        }
+
+        .summary-text {
+            word-break: break-word;
+        }
+
+        .summary-loras {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .summary-lora-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 8px;
+            background: #1a1a1a;
+            border-radius: 4px;
+        }
+
+        .summary-lora-strength {
+            margin-left: auto;
+            background: #4a9eff;
+            color: #1a1a1a;
+            padding: 2px 8px;
+            border-radius: 3px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .summary-settings {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .summary-setting {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 4px 8px;
+            background: #1a1a1a;
+            border-radius: 4px;
+        }
+
+        .summary-setting-label {
+            color: #999;
+            font-size: 12px;
+            min-width: 80px;
+        }
+
+        .summary-setting-value {
+            color: #e0e0e0;
+            font-weight: 500;
+            font-size: 12px;
+        }
+
+        .summary-prompt {
+            border-left-color: #9d4aff;
+        }
+
+        .summary-prompt-text {
+            background: #1a1a1a;
+            padding: 10px;
+            border-radius: 4px;
+            white-space: pre-wrap;
+            word-break: break-word;
+            font-size: 12px;
+            line-height: 1.5;
+        }
+
+        .summary-input-images {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .summary-input-image {
+            background: #1a1a1a;
+            padding: 6px 10px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            color: #4a9eff;
+        }
+
+        .copy-btn {
+            background: transparent;
+            border: 1px solid #4a9eff;
+            color: #4a9eff;
+            padding: 4px 6px;
+            border-radius: 3px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            margin-left: 8px;
+        }
+
+        .copy-btn:hover {
+            background: #4a9eff;
+            color: #1a1a1a;
+        }
+
+        /* Node Display Styles */
+        .summary-node {
+            margin-bottom: 12px;
+            background: #242424;
+            border-radius: 6px;
+            padding: 10px;
+            border-left: 3px solid #4a9eff;
+        }
+
+        .summary-node-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 6px;
+        }
+
+        .summary-node-id {
+            background: #4a9eff;
+            color: #1a1a1a;
+            padding: 2px 8px;
+            border-radius: 3px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .summary-node-type {
+            color: #4a9eff;
+            font-weight: 600;
+            font-size: 12px;
+        }
+
+        .summary-node-title {
+            color: #999;
+            font-size: 11px;
+            margin-bottom: 6px;
+            font-style: italic;
+        }
+
+        .summary-node-params {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .summary-param {
+            display: flex;
+            align-items: flex-start;
+            gap: 6px;
+            font-size: 11px;
+            padding: 4px 6px;
+            background: #1a1a1a;
+            border-radius: 3px;
+        }
+
+        .summary-param-key {
+            color: #999;
+            min-width: 70px;
+            flex-shrink: 0;
+        }
+
+        .summary-param-value {
+            color: #e0e0e0;
+            flex: 1;
+            word-break: break-word;
+        }
+
+        .summary-param-value.long-value {
+            max-width: 180px;
+            white-space: pre-wrap;
+            font-size: 10px;
+            line-height: 1.4;
+        }
+
+        .copy-btn-small {
+            background: transparent;
+            border: 1px solid #4a9eff;
+            color: #4a9eff;
+            padding: 2px 4px;
+            border-radius: 2px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            flex-shrink: 0;
+        }
+
+        .copy-btn-small:hover {
+            background: #4a9eff;
+            color: #1a1a1a;
+        }
+
         .gallery-container {
             flex: 1;
             overflow: hidden;
@@ -1198,6 +1443,275 @@
             return ['prompt', 'workflow'].includes(sectionId);
         }
 
+        function renderWorkflowSummary(summary) {
+            let html = '';
+
+            if (!summary || !summary.nodes || summary.nodes.length === 0) {
+                return '<div class="metadata-empty">No workflow nodes found</div>';
+            }
+
+            // Display each node
+            summary.nodes.forEach((node, index) => {
+                html += `<div class="summary-node">
+                    <div class="summary-node-header">
+                        <span class="summary-node-id">#${node.id}</span>
+                        <span class="summary-node-type">${escapeHtml(node.type)}</span>
+                    </div>`;
+
+                if (node.title && node.title !== node.type) {
+                    html += `<div class="summary-node-title">${escapeHtml(node.title)}</div>`;
+                }
+
+                // Display parameters
+                if (node.params && Object.keys(node.params).length > 0) {
+                    html += `<div class="summary-node-params">`;
+                    for (const [key, value] of Object.entries(node.params)) {
+                        const displayValue = typeof value === 'object' ? JSON.stringify(value) : String(value);
+                        const isLongValue = displayValue.length > 50;
+
+                        html += `<div class="summary-param">
+                            <span class="summary-param-key">${escapeHtml(key)}:</span>
+                            <span class="summary-param-value ${isLongValue ? 'long-value' : ''}">${escapeHtml(displayValue)}</span>
+                            <button class="copy-btn-small" onclick="copyToClipboard(\`${displayValue.replace(/`/g, '\\`').replace(/\\/g, '\\\\')}\`, '${escapeHtml(key)}')" title="Copy ${escapeHtml(key)}">
+                                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                </svg>
+                            </button>
+                        </div>`;
+                    }
+                    html += `</div>`;
+                }
+
+                html += `</div>`;
+            });
+
+            return html;
+        }
+
+        function renderWorkflowSummaryOLD(summary) {
+            let html = '';
+
+            // Checkpoint
+            if (summary.checkpoint) {
+                html += `<div class="summary-item">
+                    <div class="summary-label">
+                        <span class="summary-icon">🎨</span>
+                        <span>Checkpoint</span>
+                    </div>
+                    <div class="summary-value">
+                        <span class="summary-text">${summary.checkpoint}</span>
+                        <button class="copy-btn" onclick="copyToClipboard('${escapeHtml(summary.checkpoint)}', 'Checkpoint')" title="Copy checkpoint name">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>`;
+            }
+
+            // LoRAs
+            if (summary.loras && summary.loras.length > 0) {
+                html += `<div class="summary-item">
+                    <div class="summary-label">
+                        <span class="summary-icon">✨</span>
+                        <span>LoRAs</span>
+                    </div>
+                    <div class="summary-value summary-loras">`;
+
+                summary.loras.forEach(lora => {
+                    const loraText = `${lora.name} (${lora.strength})`;
+                    html += `<div class="summary-lora-item">
+                        <span class="summary-text">${lora.name}</span>
+                        <span class="summary-lora-strength">${lora.strength}</span>
+                        <button class="copy-btn" onclick="copyToClipboard('${escapeHtml(lora.name)}', 'LoRA')" title="Copy LoRA name">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                            </svg>
+                        </button>
+                    </div>`;
+                });
+
+                html += `</div></div>`;
+            }
+
+            // Sampler Settings
+            if (summary.sampler_settings && Object.keys(summary.sampler_settings).length > 0) {
+                const settings = summary.sampler_settings;
+                html += `<div class="summary-item">
+                    <div class="summary-label">
+                        <span class="summary-icon">⚙️</span>
+                        <span>Generation Settings</span>
+                    </div>
+                    <div class="summary-value summary-settings">`;
+
+                if (settings.steps !== undefined) {
+                    html += `<div class="summary-setting"><span class="summary-setting-label">Steps:</span> <span class="summary-setting-value">${settings.steps}</span></div>`;
+                }
+                if (settings.cfg !== undefined) {
+                    html += `<div class="summary-setting"><span class="summary-setting-label">CFG Scale:</span> <span class="summary-setting-value">${settings.cfg}</span></div>`;
+                }
+                if (settings.sampler_name) {
+                    html += `<div class="summary-setting"><span class="summary-setting-label">Sampler:</span> <span class="summary-setting-value">${settings.sampler_name}</span></div>`;
+                }
+                if (settings.scheduler) {
+                    html += `<div class="summary-setting"><span class="summary-setting-label">Scheduler:</span> <span class="summary-setting-value">${settings.scheduler}</span></div>`;
+                }
+                if (settings.seed !== undefined) {
+                    html += `<div class="summary-setting">
+                        <span class="summary-setting-label">Seed:</span>
+                        <span class="summary-setting-value">${settings.seed}</span>
+                        <button class="copy-btn" onclick="copyToClipboard('${settings.seed}', 'Seed')" title="Copy seed">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                            </svg>
+                        </button>
+                    </div>`;
+                }
+                if (settings.denoise !== undefined) {
+                    html += `<div class="summary-setting"><span class="summary-setting-label">Denoise:</span> <span class="summary-setting-value">${settings.denoise}</span></div>`;
+                }
+
+                html += `</div></div>`;
+            }
+
+            // Size
+            if (summary.size) {
+                html += `<div class="summary-item">
+                    <div class="summary-label">
+                        <span class="summary-icon">📐</span>
+                        <span>Size</span>
+                    </div>
+                    <div class="summary-value">
+                        <span class="summary-text">${summary.size}</span>
+                    </div>
+                </div>`;
+            }
+
+            // Positive Prompt
+            if (summary.positive_prompt) {
+                const promptText = escapeHtml(summary.positive_prompt);
+                html += `<div class="summary-item summary-prompt">
+                    <div class="summary-label">
+                        <span class="summary-icon">📝</span>
+                        <span>Positive Prompt</span>
+                        <button class="copy-btn" onclick="copyToClipboard(\`${promptText.replace(/`/g, '\\`')}\`, 'Positive Prompt')" title="Copy positive prompt">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="summary-value summary-prompt-text">${promptText}</div>
+                </div>`;
+            }
+
+            // Negative Prompt
+            if (summary.negative_prompt) {
+                const promptText = escapeHtml(summary.negative_prompt);
+                html += `<div class="summary-item summary-prompt">
+                    <div class="summary-label">
+                        <span class="summary-icon">🚫</span>
+                        <span>Negative Prompt</span>
+                        <button class="copy-btn" onclick="copyToClipboard(\`${promptText.replace(/`/g, '\\`')}\`, 'Negative Prompt')" title="Copy negative prompt">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="summary-value summary-prompt-text">${promptText}</div>
+                </div>`;
+            }
+
+            // Input Images
+            if (summary.input_images && summary.input_images.length > 0) {
+                html += `<div class="summary-item">
+                    <div class="summary-label">
+                        <span class="summary-icon">🖼️</span>
+                        <span>Input Images</span>
+                    </div>
+                    <div class="summary-value summary-input-images">`;
+
+                summary.input_images.forEach(img => {
+                    html += `<div class="summary-input-image">${escapeHtml(img)}</div>`;
+                });
+
+                html += `</div></div>`;
+            }
+
+            return html || '<div class="metadata-empty">No workflow information available</div>';
+        }
+
+        function escapeHtml(unsafe) {
+            if (typeof unsafe !== 'string') return unsafe;
+            return unsafe
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        function copyToClipboard(text, label) {
+            navigator.clipboard.writeText(text).then(() => {
+                showToast(`${label} copied to clipboard!`);
+            }).catch(err => {
+                console.error('Failed to copy:', err);
+                showToast('Failed to copy to clipboard', true);
+            });
+        }
+
+        let currentWorkflowSummary = null;
+
+        function openWorkflowPopup(event) {
+            event.stopPropagation();
+
+            if (!currentWorkflowSummary) {
+                showToast('No workflow data available', true);
+                return;
+            }
+
+            const popupWidth = 500;
+            const popupHeight = 700;
+            const left = (screen.width - popupWidth) / 2;
+            const top = (screen.height - popupHeight) / 2;
+
+            const popup = window.open('', 'WorkflowSummary',
+                `width=${popupWidth},height=${popupHeight},left=${left},top=${top},resizable=yes,scrollbars=yes`);
+
+            if (popup) {
+                const htmlContent = renderWorkflowSummary(currentWorkflowSummary);
+                popup.document.write('<!DOCTYPE html><html><head><title>Workflow Summary</title><style>' +
+                    '* { margin: 0; padding: 0; box-sizing: border-box; }' +
+                    'body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #1a1a1a; color: #e0e0e0; padding: 20px; line-height: 1.6; }' +
+                    'h1 { font-size: 20px; margin-bottom: 20px; color: #4a9eff; border-bottom: 2px solid #4a9eff; padding-bottom: 10px; }' +
+                    '.metadata-empty { color: #999; text-align: center; padding: 20px; font-style: italic; }' +
+                    '.summary-node { margin-bottom: 12px; background: #242424; border-radius: 6px; padding: 10px; border-left: 3px solid #4a9eff; }' +
+                    '.summary-node-header { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }' +
+                    '.summary-node-id { background: #4a9eff; color: #1a1a1a; padding: 2px 8px; border-radius: 3px; font-size: 11px; font-weight: 600; }' +
+                    '.summary-node-type { color: #4a9eff; font-weight: 600; font-size: 12px; }' +
+                    '.summary-node-title { color: #999; font-size: 11px; margin-bottom: 6px; font-style: italic; }' +
+                    '.summary-node-params { display: flex; flex-direction: column; gap: 4px; }' +
+                    '.summary-param { display: flex; align-items: flex-start; gap: 6px; font-size: 11px; padding: 4px 6px; background: #1a1a1a; border-radius: 3px; }' +
+                    '.summary-param-key { color: #999; min-width: 70px; flex-shrink: 0; }' +
+                    '.summary-param-value { color: #e0e0e0; flex: 1; word-break: break-word; }' +
+                    '.summary-param-value.long-value { max-width: 400px; white-space: pre-wrap; font-size: 10px; line-height: 1.4; }' +
+                    '.copy-btn-small { background: transparent; border: 1px solid #4a9eff; color: #4a9eff; padding: 2px 4px; border-radius: 2px; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; flex-shrink: 0; font-size: 10px; }' +
+                    '.copy-btn-small:hover { background: #4a9eff; color: #1a1a1a; }' +
+                    '</style></head><body><h1>Workflow Summary</h1>' +
+                    htmlContent +
+                    '<script>function copyToClipboard(text, label) { navigator.clipboard.writeText(text).then(() => { alert(label + " copied to clipboard!"); }).catch(err => { alert("Failed to copy to clipboard"); }); }<\/script>' +
+                    '</body></html>');
+                popup.document.close();
+            } else {
+                showToast('Please allow popups for this site', true);
+            }
+        }
+
         async function loadMetadata(imagePath) {
             const metadataContent = document.getElementById('metadataContent');
             metadataContent.innerHTML = '<div class="metadata-empty">Loading...</div>';
@@ -1210,6 +1724,9 @@
                     metadataContent.innerHTML = `<div class="metadata-empty">Error: ${metadata.error}</div>`;
                     return;
                 }
+
+                // Store workflow summary for popup
+                currentWorkflowSummary = metadata.workflow_summary || null;
 
                 let html = '';
 
@@ -1238,6 +1755,26 @@
                     <div class="metadata-value">${formatFileSize(metadata.file_size)}</div>
                 </div>`;
                 html += '</div></div>';
+
+                // Workflow Summary (NEW - appears before raw JSON sections)
+                if (metadata.workflow_summary && Object.keys(metadata.workflow_summary).length > 0) {
+                    const summaryCollapsed = getMetadataSectionState('workflow-summary');
+                    html += '<div class="metadata-section workflow-summary-section">';
+                    html += `<div class="metadata-section-title" onclick="toggleMetadataSection('workflow-summary')">
+                        <span class="metadata-section-toggle ${summaryCollapsed ? 'collapsed' : ''}" id="workflow-summary-toggle">▼</span>
+                        <span>Node Summary</span>
+                        <button class="popup-btn" onclick="openWorkflowPopup(event)" title="Open in popup window">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                                <polyline points="15 3 21 3 21 9"></polyline>
+                                <line x1="10" y1="14" x2="21" y2="3"></line>
+                            </svg>
+                        </button>
+                    </div>`;
+                    html += `<div class="metadata-section-content ${summaryCollapsed ? 'collapsed' : ''}" id="workflow-summary-content">`;
+                    html += renderWorkflowSummary(metadata.workflow_summary);
+                    html += '</div></div>';
+                }
 
                 // Prompt
                 if (metadata.prompt) {

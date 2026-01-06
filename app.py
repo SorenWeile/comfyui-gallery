@@ -101,6 +101,75 @@ def get_items(directory, current_path=''):
 
     return items
 
+def parse_workflow_summary(workflow):
+    """Parse ComfyUI workflow and extract ALL nodes with their information."""
+    summary = {
+        'nodes': []  # List of all nodes with their details
+    }
+
+    if not workflow or not isinstance(workflow, dict):
+        return summary
+
+    try:
+        # Detect format: API format (prompt) vs UI format (workflow)
+        # API format: top-level keys are node IDs, each has class_type
+        # UI format: has 'nodes' key with list of nodes
+
+        if 'nodes' in workflow and isinstance(workflow['nodes'], list):
+            # UI format - has 'nodes' array
+            for node in workflow['nodes']:
+                if isinstance(node, dict):
+                    node_type = node.get('type', 'Unknown')
+                    node_id = node.get('id', 'N/A')
+                    widgets_values = node.get('widgets_values', [])
+
+                    # Skip Note nodes
+                    if node_type in ['Note', 'NoteNode', 'MarkdownNote', 'PrimitiveNode']:
+                        continue
+
+                    # Create node entry
+                    node_entry = {
+                        'id': node_id,
+                        'type': node_type,
+                        'title': node.get('title', node_type),
+                        'params': {}
+                    }
+
+                    # Add widget values as parameters
+                    if widgets_values:
+                        for i, value in enumerate(widgets_values):
+                            node_entry['params'][f'param_{i}'] = value
+
+                    summary['nodes'].append(node_entry)
+        else:
+            # API format (prompt) - top-level dict where each key is a node ID
+            for node_id, node_data in workflow.items():
+                if isinstance(node_data, dict) and 'class_type' in node_data:
+                    node_type = node_data.get('class_type', 'Unknown')
+                    inputs = node_data.get('inputs', {})
+
+                    # Create node entry
+                    node_entry = {
+                        'id': node_id,
+                        'type': node_type,
+                        'title': node_type,
+                        'params': {}
+                    }
+
+                    # Add all inputs as parameters
+                    for key, value in inputs.items():
+                        # Skip connection arrays (they link to other nodes)
+                        if isinstance(value, list) and len(value) == 2:
+                            continue
+                        node_entry['params'][key] = value
+
+                    summary['nodes'].append(node_entry)
+
+    except Exception as e:
+        print(f"Error parsing workflow summary: {e}")
+
+    return summary
+
 def get_image_metadata(file_path):
     """Extract metadata from an image file."""
     metadata = {
@@ -111,6 +180,7 @@ def get_image_metadata(file_path):
         'exif': {},
         'prompt': None,
         'workflow': None,
+        'workflow_summary': None,
         'parameters': {}
     }
 
@@ -141,6 +211,14 @@ def get_image_metadata(file_path):
                         metadata['workflow'] = json.loads(png_info['workflow'])
                     except:
                         metadata['workflow'] = png_info['workflow']
+
+                # Parse workflow summary from either prompt (API format) or workflow (UI format)
+                # Try prompt first (API format - has more detailed structure)
+                if metadata.get('prompt'):
+                    metadata['workflow_summary'] = parse_workflow_summary(metadata['prompt'])
+                # If no summary from prompt, try workflow
+                if not metadata.get('workflow_summary') and metadata.get('workflow'):
+                    metadata['workflow_summary'] = parse_workflow_summary(metadata['workflow'])
 
                 # Store all PNG text chunks
                 for key, value in png_info.items():
