@@ -492,6 +492,143 @@
             max-width: 100%;
         }
 
+        /* Grid View */
+        .grid-view {
+            display: none;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            grid-auto-rows: minmax(220px, auto);
+            gap: 16px;
+            padding: 20px;
+            overflow-y: auto;
+            background: #1a1a1a;
+            flex: 1;
+            align-content: start;
+        }
+
+        .grid-view.active {
+            display: grid;
+        }
+
+        .grid-item {
+            position: relative;
+            aspect-ratio: 1;
+            border-radius: 8px;
+            overflow: hidden;
+            cursor: pointer;
+            border: 3px solid transparent;
+            transition: border-color 0.2s, transform 0.2s;
+            background: #2d2d2d;
+        }
+
+        .grid-item:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+        }
+
+        .grid-item.selected {
+            border-color: #4a9eff;
+        }
+
+        .grid-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .grid-item-checkbox {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            width: 24px;
+            height: 24px;
+            background: rgba(0, 0, 0, 0.7);
+            border: 2px solid #fff;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.2s;
+            pointer-events: none;
+        }
+
+        .grid-item:hover .grid-item-checkbox,
+        .grid-item.selected .grid-item-checkbox {
+            opacity: 1;
+        }
+
+        .grid-item.selected .grid-item-checkbox {
+            background: #4a9eff;
+            border-color: #4a9eff;
+        }
+
+        .grid-item-checkbox svg {
+            width: 16px;
+            height: 16px;
+            stroke: white;
+            stroke-width: 3;
+        }
+
+        .grid-folder-item {
+            background: #3a3a3a;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+        }
+
+        .grid-folder-item:hover {
+            background: #454545;
+        }
+
+        .grid-folder-icon svg {
+            width: 64px;
+            height: 64px;
+            stroke: #4a9eff;
+        }
+
+        .grid-folder-name {
+            font-size: 14px;
+            color: #e0e0e0;
+            text-align: center;
+            padding: 0 12px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            max-width: 100%;
+        }
+
+        /* Selection controls */
+        .selection-controls {
+            display: none;
+            gap: 12px;
+            align-items: center;
+            padding: 12px 20px;
+            background: #2d2d2d;
+            border-bottom: 1px solid #3a3a3a;
+        }
+
+        .selection-controls.active {
+            display: flex;
+        }
+
+        .selection-count {
+            color: #4a9eff;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .btn-secondary {
+            background: #3a3a3a;
+            color: #e0e0e0;
+        }
+
+        .btn-secondary:hover {
+            background: #4a4a4a;
+        }
+
         /* Context Menu */
         .context-menu {
             position: fixed;
@@ -571,9 +708,18 @@
 <body>
     <div class="header">
         <h1>AI Studio Gallery</h1>
-        <h6>V 0.2</h6>
+        <h6>V 0.3</h6>
         <div class="controls">
             <span class="stats" id="stats">Loading...</span>
+            <button class="btn view-toggle" id="viewToggle" onclick="toggleViewMode()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 6px;">
+                    <rect x="3" y="3" width="7" height="7"></rect>
+                    <rect x="14" y="3" width="7" height="7"></rect>
+                    <rect x="3" y="14" width="7" height="7"></rect>
+                    <rect x="14" y="14" width="7" height="7"></rect>
+                </svg>
+                Grid View
+            </button>
             <button class="btn" onclick="refreshGallery()">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 6px;">
                     <polyline points="23 4 23 10 17 10"></polyline>
@@ -604,6 +750,23 @@
         <!-- Center: Gallery -->
         <div class="gallery-container">
             <div id="breadcrumb" class="breadcrumb" style="display: none;"></div>
+
+            <!-- Selection Controls (for Grid View) -->
+            <div class="selection-controls" id="selectionControls">
+                <span class="selection-count" id="selectionCount">0 selected</span>
+                <button class="btn" onclick="downloadSelected()">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 6px;">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="7 10 12 15 17 10"></polyline>
+                        <line x1="12" y1="15" x2="12" y2="3"></line>
+                    </svg>
+                    Download Selected
+                </button>
+                <button class="btn btn-secondary" onclick="clearSelection()">Clear Selection</button>
+            </div>
+
+            <!-- Grid View -->
+            <div class="grid-view" id="gridView"></div>
 
             <!-- Detail View -->
             <div id="detailView" class="detail-view">
@@ -1153,14 +1316,23 @@
                 updateBreadcrumb(currentPath);
                 stats.textContent = `${folders.length} folder${folders.length !== 1 ? 's' : ''}, ${images.length} image${images.length !== 1 ? 's' : ''}`;
 
-                renderThumbnails();
+                // Render based on current view mode
+                if (currentViewMode === 'grid') {
+                    renderGridView();
+                } else {
+                    renderThumbnails();
+                }
 
                 // Pre-generate thumbnails in background
                 if (images.length > 0) {
                     preGenerateThumbnails();
-                    openDetailView(0);
+                    if (currentViewMode === 'detail') {
+                        openDetailView(0);
+                    }
                 } else {
-                    showEmptyState();
+                    if (currentViewMode === 'detail') {
+                        showEmptyState();
+                    }
                 }
 
                 hideLoadingIndicator();
@@ -1415,6 +1587,31 @@
             }
         }
 
+        function downloadSelected() {
+            if (selectedImages.size === 0) {
+                alert('No images selected');
+                return;
+            }
+
+            const imagePaths = Array.from(selectedImages);
+
+            // Create form and submit
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '/api/download-multiple';
+            form.style.display = 'none';
+
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'paths';
+            input.value = JSON.stringify(imagePaths);
+
+            form.appendChild(input);
+            document.body.appendChild(form);
+            form.submit();
+            document.body.removeChild(form);
+        }
+
         // Pan with mouse
         const imageWrapper = document.getElementById('imageWrapper');
 
@@ -1506,6 +1703,210 @@
             const activeThumb = thumbnailsScroll.querySelector('.thumbnail-item.active');
             if (activeThumb) {
                 activeThumb.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+            }
+        }
+
+        // Grid View Functions
+        let currentViewMode = 'detail'; // 'detail' or 'grid'
+        let selectedImages = new Set();
+
+        function renderGridView() {
+            const gridView = document.getElementById('gridView');
+            gridView.innerHTML = '';
+
+            // Folders
+            folders.forEach((folder) => {
+                const gridItem = document.createElement('div');
+                gridItem.className = 'grid-item grid-folder-item';
+                gridItem.onclick = () => navigateToFolder(folder.path);
+                gridItem.oncontextmenu = (e) => showContextMenu(e, folder, 'folder');
+
+                gridItem.innerHTML = `
+                    <div class="grid-folder-icon">
+                        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                        </svg>
+                    </div>
+                    <div class="grid-folder-name">${folder.name}</div>
+                `;
+                gridView.appendChild(gridItem);
+            });
+
+            // Images
+            images.forEach((image, index) => {
+                const gridItem = document.createElement('div');
+                gridItem.className = 'grid-item';
+                gridItem.dataset.index = index;
+                gridItem.dataset.path = image.path;
+
+                if (selectedImages.has(image.path)) {
+                    gridItem.classList.add('selected');
+                }
+
+                // Click handler for selection
+                gridItem.onclick = (e) => handleGridItemClick(e, image, index);
+                gridItem.oncontextmenu = (e) => showContextMenu(e, image, 'image');
+
+                const img = document.createElement('img');
+                img.src = `/thumbnail/${image.path}`;
+                img.alt = image.name;
+                img.loading = 'lazy';
+                img.style.opacity = '0';
+                img.style.transition = 'opacity 0.3s';
+
+                img.onload = () => {
+                    img.style.opacity = '1';
+                };
+
+                img.onerror = () => {
+                    img.style.opacity = '0.3';
+                    img.alt = 'Loading...';
+                };
+
+                const checkbox = document.createElement('div');
+                checkbox.className = 'grid-item-checkbox';
+                checkbox.innerHTML = `
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                `;
+
+                gridItem.appendChild(img);
+                gridItem.appendChild(checkbox);
+                gridView.appendChild(gridItem);
+            });
+
+            updateSelectionUI();
+        }
+
+        function handleGridItemClick(e, image, index) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            if (e.shiftKey && selectedImages.size > 0) {
+                // Range selection with Shift
+                selectImageRange(index);
+            } else {
+                // Simple click or Ctrl+Click - toggle selection
+                toggleImageSelection(image.path);
+            }
+        }
+
+        let lastSelectedIndex = -1;
+
+        function toggleImageSelection(imagePath) {
+            if (selectedImages.has(imagePath)) {
+                selectedImages.delete(imagePath);
+            } else {
+                selectedImages.add(imagePath);
+                lastSelectedIndex = images.findIndex(img => img.path === imagePath);
+            }
+            updateGridSelection();
+            updateSelectionUI();
+        }
+
+        function selectImageRange(toIndex) {
+            if (lastSelectedIndex === -1) {
+                toggleImageSelection(images[toIndex].path);
+                return;
+            }
+
+            const start = Math.min(lastSelectedIndex, toIndex);
+            const end = Math.max(lastSelectedIndex, toIndex);
+
+            for (let i = start; i <= end; i++) {
+                selectedImages.add(images[i].path);
+            }
+
+            updateGridSelection();
+            updateSelectionUI();
+        }
+
+        function updateGridSelection() {
+            const gridItems = document.querySelectorAll('.grid-item[data-path]');
+            gridItems.forEach(item => {
+                const path = item.dataset.path;
+                if (selectedImages.has(path)) {
+                    item.classList.add('selected');
+                } else {
+                    item.classList.remove('selected');
+                }
+            });
+        }
+
+        function updateSelectionUI() {
+            const selectionControls = document.getElementById('selectionControls');
+            const selectionCount = document.getElementById('selectionCount');
+
+            if (selectedImages.size > 0 && currentViewMode === 'grid') {
+                selectionControls.classList.add('active');
+                selectionCount.textContent = `${selectedImages.size} selected`;
+            } else {
+                selectionControls.classList.remove('active');
+            }
+        }
+
+        function clearSelection() {
+            selectedImages.clear();
+            lastSelectedIndex = -1;
+            updateGridSelection();
+            updateSelectionUI();
+        }
+
+        function toggleViewMode() {
+            const detailView = document.getElementById('detailView');
+            const thumbnails = document.getElementById('thumbnails');
+            const imageInfoBar = document.getElementById('imageInfoBar');
+            const gridView = document.getElementById('gridView');
+            const viewToggle = document.getElementById('viewToggle');
+
+            if (currentViewMode === 'detail') {
+                // Switch to grid view
+                currentViewMode = 'grid';
+                detailView.style.display = 'none';
+                thumbnails.style.display = 'none';
+                imageInfoBar.style.display = 'none';
+                gridView.classList.add('active');
+
+                viewToggle.innerHTML = `
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 6px;">
+                        <rect x="3" y="3" width="18" height="7"></rect>
+                        <rect x="3" y="14" width="18" height="7"></rect>
+                    </svg>
+                    Detail View
+                `;
+
+                renderGridView();
+                updateSelectionUI();
+            } else {
+                // Switch to detail view
+                currentViewMode = 'detail';
+                detailView.style.display = 'flex';
+                thumbnails.style.display = 'block';
+                imageInfoBar.style.display = 'flex';
+                gridView.classList.remove('active');
+
+                viewToggle.innerHTML = `
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 6px;">
+                        <rect x="3" y="3" width="7" height="7"></rect>
+                        <rect x="14" y="3" width="7" height="7"></rect>
+                        <rect x="3" y="14" width="7" height="7"></rect>
+                        <rect x="14" y="14" width="7" height="7"></rect>
+                    </svg>
+                    Grid View
+                `;
+
+                // Re-render thumbnails to sync with current folder
+                renderThumbnails();
+
+                // Open first image if available
+                if (images.length > 0) {
+                    openDetailView(0);
+                } else {
+                    showEmptyState();
+                }
+
+                updateSelectionUI();
             }
         }
 

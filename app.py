@@ -7,7 +7,7 @@ import io
 import threading
 from pathlib import Path
 from datetime import datetime
-from flask import Flask, render_template, send_file, jsonify
+from flask import Flask, render_template, send_file, jsonify, request
 from werkzeug.utils import safe_join
 from PIL import Image
 from PIL.PngImagePlugin import PngInfo
@@ -411,6 +411,67 @@ def download_folder(folder_path=''):
             download_name=zip_filename
         )
     except Exception as e:
+        return str(e), 500
+
+@app.route('/api/download-multiple', methods=['POST'])
+def download_multiple():
+    """Download multiple images as a ZIP file."""
+    try:
+        # Get the paths from the request
+        paths_json = request.form.get('paths')
+        print(f"Received paths_json: {paths_json}")
+
+        if not paths_json:
+            return "No paths provided", 400
+
+        paths = json.loads(paths_json)
+        print(f"Parsed paths: {paths}")
+
+        if not paths or not isinstance(paths, list):
+            return "Invalid paths", 400
+
+        # Create ZIP file in memory
+        memory_file = io.BytesIO()
+        added_files = 0
+        with zipfile.ZipFile(memory_file, 'w', zipfile.ZIP_DEFLATED) as zf:
+            for path in paths:
+                # Normalize path separators - convert all to forward slash first, then to os.sep
+                normalized_path = path.replace('\\', '/').replace('/', os.sep)
+
+                # Build the full path
+                full_path = os.path.join(OUTPUT_DIR, normalized_path)
+                full_path = os.path.normpath(full_path)
+
+                print(f"OUTPUT_DIR: {OUTPUT_DIR}")
+                print(f"Original path: {path}")
+                print(f"Normalized: {normalized_path}")
+                print(f"Full path: {full_path}")
+                print(f"Exists: {os.path.exists(full_path)}")
+
+                if os.path.exists(full_path):
+                    # Use just the filename in the ZIP
+                    arcname = os.path.basename(path)
+                    zf.write(full_path, arcname)
+                    added_files += 1
+                    print(f"Added to ZIP: {arcname}")
+                else:
+                    print(f"File not found: {full_path}")
+
+        print(f"Total files added to ZIP: {added_files}")
+
+        memory_file.seek(0)
+
+        # Generate filename
+        zip_filename = f"images_{len(paths)}.zip"
+
+        return send_file(
+            memory_file,
+            mimetype='application/zip',
+            as_attachment=True,
+            download_name=zip_filename
+        )
+    except Exception as e:
+        print(f"Error downloading multiple images: {e}")
         return str(e), 500
 
 @app.route('/health')
