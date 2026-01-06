@@ -419,14 +419,10 @@ def download_multiple():
     try:
         # Get the paths from the request
         paths_json = request.form.get('paths')
-        print(f"Received paths_json: {paths_json}")
-
         if not paths_json:
             return "No paths provided", 400
 
         paths = json.loads(paths_json)
-        print(f"Parsed paths: {paths}")
-
         if not paths or not isinstance(paths, list):
             return "Invalid paths", 400
 
@@ -442,22 +438,13 @@ def download_multiple():
                 full_path = os.path.join(OUTPUT_DIR, normalized_path)
                 full_path = os.path.normpath(full_path)
 
-                print(f"OUTPUT_DIR: {OUTPUT_DIR}")
-                print(f"Original path: {path}")
-                print(f"Normalized: {normalized_path}")
-                print(f"Full path: {full_path}")
-                print(f"Exists: {os.path.exists(full_path)}")
-
                 if os.path.exists(full_path):
                     # Use just the filename in the ZIP
                     arcname = os.path.basename(path)
                     zf.write(full_path, arcname)
                     added_files += 1
-                    print(f"Added to ZIP: {arcname}")
-                else:
-                    print(f"File not found: {full_path}")
 
-        print(f"Total files added to ZIP: {added_files}")
+        print(f"Downloaded {added_files} images as ZIP")
 
         memory_file.seek(0)
 
