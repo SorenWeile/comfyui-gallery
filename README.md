@@ -1,6 +1,6 @@
 # ComfyUI Gallery
 
-A modern, feature-rich Flask-based gallery viewer for ComfyUI outputs with dual view modes and advanced navigation.
+A modern, feature-rich Flask-based gallery viewer for ComfyUI outputs with dual view modes, advanced navigation, and modular architecture.
 
 ## Screenshots
 
@@ -43,6 +43,7 @@ A modern, feature-rich Flask-based gallery viewer for ComfyUI outputs with dual 
 - Directory tree caching (5-minute duration)
 - Optimized for large image collections
 - Native browser lazy loading
+- Modular JavaScript architecture for better performance
 
 ### 🎨 UI/UX
 - Modern dark theme
@@ -169,14 +170,22 @@ http://localhost:3002
 
 ```
 comfyui-gallery/
-├── app.py                  # Flask backend server
+├── app.py                      # Flask backend server
 ├── templates/
-│   └── gallery.html        # Single-page application (HTML + CSS + JS)
-├── thumbnails/             # Auto-generated thumbnail cache (gitignored)
-├── requirements.txt        # Python dependencies
-├── start.sh               # Startup script
-├── install_gallery.sh     # Installation script for Docker
-└── README.md              # This file
+│   └── gallery.html            # Main HTML structure (clean & minimal)
+├── static/
+│   ├── css/
+│   │   └── gallery.css         # All styles (dark theme, layouts, animations)
+│   └── js/
+│       ├── gallery-state.js    # Global state management
+│       ├── gallery-utils.js    # Utility functions (notifications, clipboard, etc.)
+│       ├── gallery-ui.js       # UI rendering (thumbnails, grid, metadata)
+│       └── gallery-core.js     # Core logic (API calls, navigation, events)
+├── thumbnails/                 # Auto-generated thumbnail cache (gitignored)
+├── requirements.txt            # Python dependencies
+├── start.sh                    # Startup script
+├── install_gallery.sh          # Installation script for Docker
+└── README.md                   # This file
 ```
 
 ## Technical Details
@@ -186,12 +195,33 @@ comfyui-gallery/
 - **Caching**: In-memory directory tree cache (5-minute TTL)
 - **Threading**: Background thumbnail generation to prevent blocking
 - **ZIP Creation**: In-memory ZIP file generation for downloads
+- **Static File Serving**: Automatic serving of CSS/JS from `/static` directory
 
 ### Frontend (Vanilla JavaScript)
 - **No Dependencies**: Pure HTML/CSS/JavaScript
+- **Modular Architecture**: Organized into separate files by responsibility
+  - **gallery-state.js**: Manages application state (current image, zoom level, selections)
+  - **gallery-utils.js**: Reusable utilities (clipboard, notifications, formatting)
+  - **gallery-ui.js**: UI rendering and updates (thumbnails, metadata, context menus)
+  - **gallery-core.js**: Business logic (API calls, navigation, event handling)
 - **Responsive Grid**: CSS Grid with auto-fill columns
-- **State Management**: Simple JavaScript state for view modes and selections
 - **SVG Icons**: Minimal Feather-style icons
+- **Performance**: Separated concerns enable better code splitting and caching
+
+### Why Modular?
+
+The original `gallery.html` was 2478 lines of HTML, CSS, and JavaScript in a single file. The new structure splits this into:
+
+- **gallery.html**: 213 lines (91% reduction) - clean HTML structure
+- **gallery.css**: 950 lines - all styling in one reusable file
+- **4 JavaScript modules**: ~1300 lines total, logically organized
+
+**Benefits:**
+- Easier to read and maintain
+- Better browser caching (CSS/JS files cached separately)
+- Faster development (find functions quickly)
+- Easier to debug (stack traces show specific files)
+- Team collaboration (work on different modules simultaneously)
 
 ## Integration with Application Manager
 
@@ -223,9 +253,24 @@ pip install -r requirements.txt
 FLASK_ENV=development python app.py
 ```
 
-### Adding New Features
+### File Organization
 
-The application is structured as a single-page application with all frontend code in `gallery.html`. Backend endpoints are defined in `app.py`.
+When adding new features, follow this organization:
+
+- **Styles**: Add CSS to `static/css/gallery.css`
+- **State variables**: Add to `static/js/gallery-state.js`
+- **Utilities**: Add helper functions to `static/js/gallery-utils.js`
+- **UI components**: Add rendering functions to `static/js/gallery-ui.js`
+- **Business logic**: Add API calls and handlers to `static/js/gallery-core.js`
+- **HTML structure**: Modify `templates/gallery.html` only for markup changes
+
+### Code Style
+
+- Use clear, descriptive function names
+- Group related functions together
+- Add comments for complex logic
+- Keep functions focused on a single responsibility
+- Maintain consistent indentation (4 spaces)
 
 ## License
 
@@ -234,7 +279,19 @@ MIT
 ## Contributing
 
 Pull requests welcome! Please ensure:
-- Code follows existing style
+- Code follows existing modular structure
+- New CSS goes in `gallery.css`, not inline
+- New JS functions go in the appropriate module
 - No external dependencies added without discussion
 - Test with multiple browsers
 - Update README for new features
+- Keep file organization clean
+
+## Changelog
+
+### v0.3 (Current)
+- Refactored to modular architecture
+- Split 2478-line monolithic file into organized modules
+- Improved maintainability and performance
+- Better browser caching support
+- Enhanced developer experience
