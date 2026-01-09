@@ -13,6 +13,9 @@ A modern, feature-rich Flask-based gallery viewer for ComfyUI outputs with dual 
 ### Folder Navigation
 ![Folder Tree - Hierarchical navigation with context menus](docs/folder-navigation.png)
 
+### Workflow Summary
+![Workflow Summary - Detailed view of ComfyUI workflow nodes and parameters](docs/Workflow-Summary.png)
+
 ## Features
 
 ### 🎨 Dual View Modes
@@ -37,6 +40,15 @@ A modern, feature-rich Flask-based gallery viewer for ComfyUI outputs with dual 
 - Fit-to-screen mode
 - Keyboard navigation (arrow keys)
 - ComfyUI metadata viewer (prompt, workflow, parameters)
+
+### 🔧 Workflow Summary
+- Intelligent workflow node visualization
+- Automatic extraction of key parameters (model, sampler, steps, CFG scale)
+- Display prompts (positive and negative)
+- LoRA detection with strength indicators
+- Checkpoint and VAE information
+- Collapsible sections for clean organization
+- Copy individual parameters or entire workflow
 
 ### 🎯 Performance
 - Background thumbnail generation with caching
@@ -207,21 +219,6 @@ comfyui-gallery/
 - **Responsive Grid**: CSS Grid with auto-fill columns
 - **SVG Icons**: Minimal Feather-style icons
 - **Performance**: Separated concerns enable better code splitting and caching
-
-### Why Modular?
-
-The original `gallery.html` was 2478 lines of HTML, CSS, and JavaScript in a single file. The new structure splits this into:
-
-- **gallery.html**: 213 lines (91% reduction) - clean HTML structure
-- **gallery.css**: 950 lines - all styling in one reusable file
-- **4 JavaScript modules**: ~1300 lines total, logically organized
-
-**Benefits:**
-- Easier to read and maintain
-- Better browser caching (CSS/JS files cached separately)
-- Faster development (find functions quickly)
-- Easier to debug (stack traces show specific files)
-- Team collaboration (work on different modules simultaneously)
 
 ## Integration with Application Manager
 
