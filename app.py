@@ -12,6 +12,9 @@ from werkzeug.utils import safe_join
 from PIL import Image
 from PIL.PngImagePlugin import PngInfo
 
+# Import database module
+import database
+
 app = Flask(__name__)
 
 # Configuration
@@ -391,6 +394,11 @@ def api_images():
 def api_browse(folder_path=''):
     """API endpoint to browse folders and images."""
     items = get_items(OUTPUT_DIR, folder_path)
+
+    # Add favorite status to images
+    if items['images']:
+        items['images'] = database.get_files_with_favorites(items['images'])
+
     return jsonify({
         'current_path': folder_path,
         'folders': items['folders'],
@@ -544,7 +552,66 @@ def health():
     """Health check endpoint."""
     return jsonify({'status': 'healthy', 'output_dir': OUTPUT_DIR})
 
+@app.route('/api/favorite/<path:image_path>', methods=['POST'])
+def api_toggle_favorite(image_path):
+    """Toggle favorite status for an image."""
+    try:
+        new_status = database.toggle_favorite(image_path)
+        return jsonify({
+            'status': 'success',
+            'is_favorite': new_status,
+            'path': image_path
+        })
+    except Exception as e:
+        print(f"Error toggling favorite: {e}")
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+
+@app.route('/api/favorite-batch', methods=['POST'])
+def api_favorite_batch():
+    """Set favorite status for multiple images."""
+    try:
+        data = request.get_json()
+        file_paths = data.get('file_paths', [])
+        is_favorite = data.get('is_favorite', True)
+
+        if not file_paths:
+            return jsonify({'status': 'error', 'message': 'No files provided'}), 400
+
+        updated = database.set_favorite_batch(file_paths, is_favorite)
+        return jsonify({
+            'status': 'success',
+            'updated': updated,
+            'is_favorite': is_favorite
+        })
+    except Exception as e:
+        print(f"Error in batch favorite: {e}")
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+
+@app.route('/api/favorites')
+def api_get_favorites():
+    """Get all favorited images."""
+    try:
+        favorites = database.get_favorites()
+        favorite_count = database.get_favorite_count()
+        return jsonify({
+            'images': favorites,
+            'total': favorite_count
+        })
+    except Exception as e:
+        print(f"Error getting favorites: {e}")
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+
 if __name__ == '__main__':
+    # Initialize database
+    database.set_database_path(OUTPUT_DIR)
+    database.initialize_database()
+
+    # Sync files to database on startup
+    print("INFO: Syncing files to database...")
+    initial_files = get_images(OUTPUT_DIR)
+    added, updated, deleted = database.sync_files_to_database(initial_files)
+    print(f"INFO: Database sync complete - Added: {added}, Updated: {updated}, Deleted: {deleted}")
+
     print(f"Starting ComfyUI Gallery on port {GALLERY_PORT}")
     print(f"Serving images from: {OUTPUT_DIR}")
     app.run(host='0.0.0.0', port=GALLERY_PORT, debug=False)

@@ -297,6 +297,9 @@ function openDetailView(index) {
     // Update image info bar
     updateImageInfo(currentImage);
 
+    // Update favorite button
+    updateFavoriteButton();
+
     updateActiveThumbnail();
 }
 
@@ -551,6 +554,227 @@ document.addEventListener('keydown', (e) => {
         navigateDetail(1);
     }
 });
+
+// Favorites Functions
+async function toggleFavorite(imagePath) {
+    try {
+        const response = await fetch(`/api/favorite/${imagePath}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+
+        const result = await response.json();
+
+        if (result.status === 'success') {
+            // Update the image in the current images array
+            const imageIndex = images.findIndex(img => img.path === imagePath);
+            if (imageIndex >= 0) {
+                images[imageIndex].is_favorite = result.is_favorite;
+            }
+
+            // Update UI based on current view
+            if (currentViewMode === 'grid') {
+                renderGridView();
+            } else {
+                // Update detail view favorite button
+                updateFavoriteButton();
+                // Update thumbnail overlay
+                renderThumbnails();
+            }
+
+            showNotification(result.is_favorite ? 'Added to favorites' : 'Removed from favorites');
+            return result.is_favorite;
+        } else {
+            showNotification('Error updating favorite', true);
+            return null;
+        }
+    } catch (error) {
+        console.error('Error toggling favorite:', error);
+        showNotification('Error updating favorite', true);
+        return null;
+    }
+}
+
+async function setFavoritesBatch(filePaths, isFavorite) {
+    try {
+        const response = await fetch('/api/favorite-batch', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                file_paths: filePaths,
+                is_favorite: isFavorite
+            })
+        });
+
+        const result = await response.json();
+
+        if (result.status === 'success') {
+            // Update images in current array
+            filePaths.forEach(path => {
+                const imageIndex = images.findIndex(img => img.path === path);
+                if (imageIndex >= 0) {
+                    images[imageIndex].is_favorite = isFavorite;
+                }
+            });
+
+            // Refresh view
+            if (currentViewMode === 'grid') {
+                renderGridView();
+            } else {
+                renderThumbnails();
+            }
+
+            showNotification(`Updated favorites for ${result.updated} file(s)`);
+            return true;
+        } else {
+            showNotification('Error updating favorites', true);
+            return false;
+        }
+    } catch (error) {
+        console.error('Error in batch favorite:', error);
+        showNotification('Error updating favorites', true);
+        return false;
+    }
+}
+
+async function toggleFavoritesFilter() {
+    showFavoritesOnly = !showFavoritesOnly;
+
+    const filterBtn = document.getElementById('favoritesFilterBtn');
+    if (filterBtn) {
+        if (showFavoritesOnly) {
+            filterBtn.classList.add('active');
+        } else {
+            filterBtn.classList.remove('active');
+        }
+    }
+
+    if (showFavoritesOnly) {
+        await loadFavorites();
+    } else {
+        await loadImages();
+    }
+}
+
+async function loadFavorites() {
+    const stats = document.getElementById('stats');
+
+    try {
+        stats.textContent = 'Loading favorites...';
+        showLoadingIndicator();
+
+        const response = await fetch('/api/favorites');
+        const data = await response.json();
+
+        folders = []; // No folders in favorites view
+        images = data.images || [];
+
+        // Update breadcrumb to show "Favorites"
+        const breadcrumb = document.getElementById('breadcrumb');
+        breadcrumb.innerHTML = `
+            <span class="breadcrumb-item">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2">
+                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                </svg>
+                Favorites
+            </span>
+        `;
+
+        stats.textContent = `${images.length} favorite image${images.length !== 1 ? 's' : ''}`;
+
+        // Render based on current view mode
+        if (currentViewMode === 'grid') {
+            renderGridView();
+        } else {
+            renderThumbnails();
+            if (images.length > 0) {
+                openDetailView(0);
+            } else {
+                showEmptyState('No favorites yet');
+            }
+        }
+
+        hideLoadingIndicator();
+    } catch (error) {
+        console.error('Error loading favorites:', error);
+        stats.textContent = 'Error loading favorites';
+        hideLoadingIndicator();
+    }
+}
+
+function updateFavoriteButton() {
+    const favoriteBtn = document.getElementById('favoriteBtn');
+    if (!favoriteBtn || currentImageIndex < 0) return;
+
+    const currentImage = images[currentImageIndex];
+    if (!currentImage) return;
+
+    const isFavorite = currentImage.is_favorite;
+
+    // Update button appearance - icon only
+    favoriteBtn.innerHTML = `
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="${isFavorite ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2">
+            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+        </svg>
+    `;
+
+    // Update tooltip
+    favoriteBtn.title = isFavorite ? 'Remove from Favorites' : 'Add to Favorites';
+
+    if (isFavorite) {
+        favoriteBtn.classList.add('active');
+    } else {
+        favoriteBtn.classList.remove('active');
+    }
+}
+
+function showEmptyState(message = 'No images found') {
+    const detailImage = document.getElementById('detailImage');
+    const metadataPanel = document.getElementById('metadataPanel');
+
+    detailImage.innerHTML = `
+        <div style="display: flex; align-items: center; justify-content: center; height: 100%; color: #666;">
+            <div style="text-align: center;">
+                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-bottom: 16px; opacity: 0.5;">
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                    <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                    <polyline points="21 15 16 10 5 21"></polyline>
+                </svg>
+                <div style="font-size: 18px;">${message}</div>
+            </div>
+        </div>
+    `;
+
+    metadataPanel.style.display = 'none';
+}
+
+// Wrapper functions for UI button clicks
+async function toggleFavoriteCurrentImage() {
+    if (currentImageIndex < 0 || !images[currentImageIndex]) return;
+    await toggleFavorite(images[currentImageIndex].path);
+}
+
+async function favoriteSelected() {
+    const selectedPaths = Array.from(selectedImages);
+    if (selectedPaths.length === 0) {
+        showNotification('No images selected');
+        return;
+    }
+    await setFavoritesBatch(selectedPaths, true);
+}
+
+async function unfavoriteSelected() {
+    const selectedPaths = Array.from(selectedImages);
+    if (selectedPaths.length === 0) {
+        showNotification('No images selected');
+        return;
+    }
+    await setFavoritesBatch(selectedPaths, false);
+}
 
 // Initialize
 async function initGallery() {

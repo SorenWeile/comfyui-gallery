@@ -29,15 +29,19 @@ A modern, feature-rich Flask-based gallery viewer for ComfyUI outputs with dual 
 - Folder download as ZIP
 
 ### 🖼️ Image Management
+- **Favorites System**: Star images to mark them as favorites
+- **Favorites Filter**: Toggle view to show only favorited images
+- **Persistent Storage**: SQLite database stores favorites on persistent volume
 - **Multiselect**: Select multiple images with click, Ctrl+Click, or Shift+Click
-- **Batch Download**: Download selected images as ZIP file
-- **Single Image Actions**: Download, view metadata, copy path/workflow
+- **Batch Operations**: Download or favorite/unfavorite multiple images at once
+- **Single Image Actions**: Download, favorite, view metadata, copy path/workflow
 - Lazy-loaded thumbnails with background generation
 - Image information bar (name, size, modified date)
 
 ### 🔍 Detail View Features
 - Pan and zoom controls
 - Fit-to-screen mode
+- One-click favorite toggle button
 - Keyboard navigation (arrow keys)
 - ComfyUI metadata viewer (prompt, workflow, parameters)
 
@@ -51,6 +55,8 @@ A modern, feature-rich Flask-based gallery viewer for ComfyUI outputs with dual 
 - Copy individual parameters or entire workflow
 
 ### 🎯 Performance
+- SQLite database with WAL mode for concurrent access
+- Automatic file synchronization on startup
 - Background thumbnail generation with caching
 - Directory tree caching (5-minute duration)
 - Optimized for large image collections
@@ -125,12 +131,17 @@ http://localhost:3002
 - `GET /thumbnail/<path>` - Serve optimized thumbnail (300x300 JPEG)
 
 ### Data & Metadata
-- `GET /api/browse` - Get root folder contents
-- `GET /api/browse/<path>` - Get folder contents at path
+- `GET /api/browse` - Get root folder contents (includes favorite status)
+- `GET /api/browse/<path>` - Get folder contents at path (includes favorite status)
 - `GET /api/metadata/<path>` - Get ComfyUI PNG metadata (prompt, workflow)
 - `GET /api/tree` - Get complete directory tree structure
 - `POST /api/generate-thumbnails` - Pre-generate thumbnails in background
 - `GET /health` - Health check endpoint
+
+### Favorites
+- `POST /api/favorite/<path>` - Toggle favorite status for an image
+- `POST /api/favorite-batch` - Batch update favorites (set multiple images)
+- `GET /api/favorites` - Get all favorited images
 
 ### Downloads
 - `GET /api/download/<path>` - Download single image
@@ -139,11 +150,29 @@ http://localhost:3002
 
 ## Usage Guide
 
+### Favorites System
+
+**Marking Favorites:**
+- In Detail View: Click the star button in the zoom controls (top-right)
+- In Grid View: Select multiple images and click "Add to Favorites"
+- Visual indicator: Gold star overlay appears on favorited images
+
+**Viewing Favorites:**
+- Click the "Favorites" button in the header toolbar
+- Toggle between all images and favorites-only view
+- Favorites are stored in SQLite database on persistent volume
+
+**Batch Operations:**
+- Select multiple images in Grid View
+- Use "Add to Favorites" or "Remove from Favorites" buttons
+- Download selected favorites together
+
 ### View Modes
 
 **Detail View** (Default)
 - Browse images with large preview and thumbnail strip
 - Pan and zoom images
+- Click star button to favorite current image
 - View full metadata
 - Navigate with arrow keys
 
@@ -152,6 +181,7 @@ http://localhost:3002
 - Click images to select/deselect
 - Shift+Click for range selection
 - Use "Download Selected" to batch download
+- Batch favorite/unfavorite selected images
 
 ### Context Menu Actions
 
@@ -183,6 +213,7 @@ http://localhost:3002
 ```
 comfyui-gallery/
 ├── app.py                      # Flask backend server
+├── database.py                 # SQLite database module (favorites, file sync)
 ├── templates/
 │   └── gallery.html            # Main HTML structure (clean & minimal)
 ├── static/
@@ -194,15 +225,23 @@ comfyui-gallery/
 │       ├── gallery-ui.js       # UI rendering (thumbnails, grid, metadata)
 │       └── gallery-core.js     # Core logic (API calls, navigation, events)
 ├── thumbnails/                 # Auto-generated thumbnail cache (gitignored)
-├── requirements.txt            # Python dependencies
+├── requirements.txt            # Python dependencies (SQLite is built-in)
 ├── start.sh                    # Startup script
 ├── install_gallery.sh          # Installation script for Docker
 └── README.md                   # This file
 ```
 
+**Database Storage:**
+- SQLite database automatically created at `{COMFYUI_OUTPUT_DIR}/.gallery_cache/gallery.db`
+- Stored on persistent volume (not lost on pod restart)
+- Automatic file synchronization on startup
+
 ## Technical Details
 
 ### Backend (Flask)
+- **Database**: SQLite with WAL mode for concurrent read/write operations
+- **File Sync**: Automatic synchronization between disk and database on startup
+- **Schema Versioning**: Non-destructive migrations for database upgrades
 - **Thumbnail Generation**: PIL/Pillow for optimized 300x300 JPEG thumbnails
 - **Caching**: In-memory directory tree cache (5-minute TTL)
 - **Threading**: Background thumbnail generation to prevent blocking
@@ -286,7 +325,17 @@ Pull requests welcome! Please ensure:
 
 ## Changelog
 
-### v0.3 (Current)
+### v0.4 (Current)
+- **NEW**: Favorites system with SQLite database
+- **NEW**: Star button in detail view to favorite images
+- **NEW**: Favorites filter toggle in header toolbar
+- **NEW**: Batch favorite/unfavorite in grid view
+- **NEW**: Gold star overlays on favorited images
+- **NEW**: Persistent storage on RunPod volume
+- Database auto-sync on startup
+- Icon-only zoom controls for cleaner UI
+
+### v0.3
 - Refactored to modular architecture
 - Split 2478-line monolithic file into organized modules
 - Improved maintainability and performance

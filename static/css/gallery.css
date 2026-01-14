@@ -940,3 +940,54 @@ h1 {
     border-radius: 50%;
     animation: spin 0.8s linear infinite;
 }
+
+/* Favorites Styles */
+.favorite-overlay {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: rgba(0, 0, 0, 0.7);
+    border-radius: 4px;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffd700;
+    pointer-events: none;
+    z-index: 10;
+}
+
+.favorite-overlay svg {
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
+}
+
+.btn.active {
+    background: linear-gradient(to bottom, #5a8fc7, #4a7fb7);
+    border-color: #3a6fa7;
+}
+
+.btn.active svg {
+    fill: currentColor;
+}
+
+#favoriteBtn.active {
+    color: #ffd700;
+}
+
+#favoriteBtn.active svg {
+    fill: #ffd700;
+}
+
+#favoritesFilterBtn.active {
+    background: linear-gradient(to bottom, #5a8fc7, #4a7fb7);
+    border-color: #3a6fa7;
+}
+
+#favoritesFilterBtn.active svg {
+    fill: #ffd700;
+}
+
+.zoom-btn.active {
+    background: linear-gradient(to bottom, #5a8fc7, #4a7fb7);
+    border-color: #3a6fa7;
+}

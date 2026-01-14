@@ -30,3 +30,6 @@ let thumbnailRetryInterval = null;
 
 // Current workflow summary
 let currentWorkflowSummary = null;
+
+// Favorites filter state
+let showFavoritesOnly = false;

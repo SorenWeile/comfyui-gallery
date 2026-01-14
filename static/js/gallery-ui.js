@@ -130,6 +130,19 @@ function renderThumbnails() {
         };
 
         thumb.appendChild(img);
+
+        // Add favorite indicator overlay
+        if (image.is_favorite) {
+            const favoriteOverlay = document.createElement('div');
+            favoriteOverlay.className = 'favorite-overlay';
+            favoriteOverlay.innerHTML = `
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2">
+                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                </svg>
+            `;
+            thumb.appendChild(favoriteOverlay);
+        }
+
         thumbnailsScroll.appendChild(thumb);
     });
 
@@ -203,6 +216,19 @@ function renderGridView() {
 
         gridItem.appendChild(img);
         gridItem.appendChild(checkbox);
+
+        // Add favorite indicator overlay
+        if (image.is_favorite) {
+            const favoriteOverlay = document.createElement('div');
+            favoriteOverlay.className = 'favorite-overlay';
+            favoriteOverlay.innerHTML = `
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2">
+                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                </svg>
+            `;
+            gridItem.appendChild(favoriteOverlay);
+        }
+
         gridView.appendChild(gridItem);
     });
 
