@@ -205,13 +205,19 @@ def get_image_metadata(file_path):
                 png_info = img.info
                 if 'prompt' in png_info:
                     try:
-                        metadata['prompt'] = json.loads(png_info['prompt'])
+                        # Handle NaN, Infinity, -Infinity which are invalid JSON but may appear in ComfyUI metadata
+                        prompt_str = png_info['prompt']
+                        prompt_str = prompt_str.replace('NaN', 'null').replace('Infinity', 'null').replace('-Infinity', 'null')
+                        metadata['prompt'] = json.loads(prompt_str)
                     except:
                         metadata['prompt'] = png_info['prompt']
 
                 if 'workflow' in png_info:
                     try:
-                        metadata['workflow'] = json.loads(png_info['workflow'])
+                        # Handle NaN, Infinity, -Infinity which are invalid JSON but may appear in ComfyUI metadata
+                        workflow_str = png_info['workflow']
+                        workflow_str = workflow_str.replace('NaN', 'null').replace('Infinity', 'null').replace('-Infinity', 'null')
+                        metadata['workflow'] = json.loads(workflow_str)
                     except:
                         metadata['workflow'] = png_info['workflow']
 
