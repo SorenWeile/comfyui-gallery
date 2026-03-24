@@ -114,6 +114,10 @@ async function loadMetadata(imagePath) {
         </div>`;
         html += `<div class="metadata-section-content ${basicCollapsed ? 'collapsed' : ''}" id="basic-content">`;
         html += `<div class="metadata-item">
+            <div class="metadata-label">Name</div>
+            <div class="metadata-value">${imagePath.split('/').pop()}</div>
+        </div>`;
+        html += `<div class="metadata-item">
             <div class="metadata-label">Format</div>
             <div class="metadata-value">${metadata.format || 'N/A'}</div>
         </div>`;
